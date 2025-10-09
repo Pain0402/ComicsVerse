@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 
 // Hàm main - điểm khởi đầu của ứng dụng
@@ -15,7 +16,9 @@ Future<void> main() async {
   );
 
   // Chạy ứng dụng
-  runApp(const App());
+  // runApp(const App());
+  runApp(const ProviderScope(child: App()));
+
 }
 
 // Lấy instance của Supabase client để sử dụng trong ứng dụng

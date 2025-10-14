@@ -18,7 +18,6 @@ Future<void> main() async {
   // Chạy ứng dụng
   // runApp(const App());
   runApp(const ProviderScope(child: App()));
-
 }
 
 // Lấy instance của Supabase client để sử dụng trong ứng dụng

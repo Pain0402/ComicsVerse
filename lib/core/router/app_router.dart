@@ -10,6 +10,9 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../presentation/screens/scaffold_with_nav_bar.dart';
 import 'package:comicsapp/features/home/domain/entities/story.dart';
 import 'package:comicsapp/features/home/presentation/screens/story_details_screen.dart';
+import 'package:comicsapp/features/profile/presentation/screens/edit_profile_screen.dart';
+import 'package:comicsapp/presentation/screens/splash_screen.dart';
+
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -23,12 +26,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     routes: [
       GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/story/:storyId',
@@ -66,28 +77,43 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
     // Logic điều hướng tự động
+     // SỬA ĐỔI: Cập nhật toàn bộ logic điều hướng tự động
     redirect: (context, state) {
-      // authStateChangesProvider sẽ cung cấp trạng thái người dùng
-      // .value cho phép truy cập dữ liệu một cách an toàn
-      final user = authState.value;
-      final isLoggedIn = user != null;
-
-      final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
-
-      if (!isLoggedIn && !isLoggingIn) {
-        // Nếu chưa đăng nhập và không ở trang login/signup, chuyển về login
-        return '/login';
+      // Trong khi trạng thái xác thực đang tải, chúng ta không làm gì cả.
+      // Người dùng sẽ tiếp tục thấy màn hình chờ (SplashScreen).
+      if (authState.isLoading || authState.hasError) {
+        return null;
       }
 
-      if (isLoggedIn && isLoggingIn) {
-        // Nếu đã đăng nhập và đang ở trang login/signup, chuyển đến trang chủ
+      // Xác định người dùng đã đăng nhập hay chưa.
+      final isLoggedIn = authState.valueOrNull != null;
+      
+      // Lấy vị trí hiện tại của người dùng.
+      final location = state.uri.toString();
+      final isAtSplash = location == '/splash';
+      final isAtAuthScreen = location == '/login' || location == '/signup';
+
+      // Kịch bản 1: Nếu đang ở màn hình chờ, phải điều hướng đi.
+      if (isAtSplash) {
+        return isLoggedIn ? '/home' : '/login';
+      }
+
+      // Kịch bản 2: Nếu đã đăng nhập nhưng lại ở màn hình đăng nhập/đăng ký.
+      if (isLoggedIn && isAtAuthScreen) {
         return '/home';
       }
 
-      // Không cần điều hướng, trả về null
+      // Kịch bản 3: Nếu chưa đăng nhập và cố gắng truy cập trang cần bảo vệ.
+      if (!isLoggedIn && !isAtAuthScreen) {
+        return '/login';
+      }
+
+      // Trong mọi trường hợp khác, không cần điều hướng.
       return null;
     },
   );
 });
+
+
 
 

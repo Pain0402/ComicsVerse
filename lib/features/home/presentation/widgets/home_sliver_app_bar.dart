@@ -2,22 +2,22 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:comicsapp/features/auth/domain/entities/profile.dart';
+// THÊM MỚI: Import provider từ feature profile
+import 'package:comicsapp/features/profile/presentation/providers/profile_providers.dart';
 
-class HomeSliverAppBar extends StatefulWidget {
-  final AsyncValue<Profile?> userProfile;
-  const HomeSliverAppBar({super.key, required this.userProfile});
-
-  @override
-  State<HomeSliverAppBar> createState() => _HomeSliverAppBarState();
-}
-
-class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
-  final ValueNotifier<bool> isScrolledNotifier = ValueNotifier(false);
+class HomeSliverAppBar extends ConsumerWidget { // SỬA: Chuyển thành ConsumerWidget
+  // BỎ DÒNG NÀY: final AsyncValue<Profile?> userProfile;
+  const HomeSliverAppBar({super.key}); // SỬA: Bỏ tham số userProfile
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // SỬA: Thêm WidgetRef
+    // THÊM MỚI: Lấy userProfile từ provider chung
+    final userProfile = ref.watch(userProfileProvider);
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
+    final ValueNotifier<bool> isScrolledNotifier = ValueNotifier(false);
+
     return NotificationListener<ScrollNotification>(
       onNotification: (scrollNotification) {
         final scroll = scrollNotification.metrics.pixels;
@@ -47,34 +47,17 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
         flexibleSpace: ValueListenableBuilder<bool>(
           valueListenable: isScrolledNotifier,
           builder: (context, isScrolled, child) {
-            // Sử dụng Stack để đặt BackdropFilter đúng vị trí
-            return Stack(
-              children: [
-                // Lớp nền mờ
-                Positioned.fill(
-                  child: ClipRRect(
-                    child: BackdropFilter(
-                      filter: isScrolled
-                          ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
-                          : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        color: isScrolled
-                            ? theme.colorScheme.background.withOpacity(0.5)
-                            : Colors.transparent,
-                      ),
-                    ),
-                  ),
-                ),
-                // Lớp nội dung (FlexibleSpaceBar)
-                FlexibleSpaceBar(
+            return ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: isScrolled ? 10 : 0, sigmaY: isScrolled ? 10 : 0),
+                child: FlexibleSpaceBar(
                   titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   title: isScrolled
-                      ? _buildCollapsedTitle(widget.userProfile, theme)
+                      ? _buildCollapsedTitle(userProfile, theme)
                       : null,
-                  background: _buildExpandedBackground(widget.userProfile, theme),
+                  background: _buildExpandedBackground(userProfile, theme),
                 ),
-              ],
+              ),
             );
           },
         ),
@@ -83,7 +66,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
   }
 
   Widget _buildExpandedBackground(AsyncValue<Profile?> userProfile, ThemeData theme) {
-     // ... (Nội dung hàm này không thay đổi)
+    // ... nội dung hàm không đổi
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Column(
@@ -114,7 +97,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
   }
 
   Widget _buildCollapsedTitle(AsyncValue<Profile?> userProfile, ThemeData theme) {
-    // ... (Nội dung hàm này không thay đổi)
+    // ... nội dung hàm không đổi
     return Row(
       children: userProfile.when(
         data: (profile) => [
@@ -144,4 +127,3 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
     );
   }
 }
-

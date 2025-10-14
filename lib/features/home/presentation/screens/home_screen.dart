@@ -6,6 +6,7 @@ import 'package:comicsapp/features/home/presentation/providers/home_providers.da
 import 'package:comicsapp/features/home/presentation/widgets/for_you_grid_section.dart';
 import 'package:comicsapp/features/home/presentation/widgets/home_sliver_app_bar.dart';
 import 'package:comicsapp/features/home/presentation/widgets/ranking_carousel_section.dart';
+// BỎ DÒNG NÀY: import 'package:comicsapp/features/profile/presentation/providers/profile_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -13,11 +14,10 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storiesAsyncValue = ref.watch(allStoriesProvider);
-    final userProfile = ref.watch(userProfileProvider);
+    // BỎ DÒNG NÀY: final userProfile = ref.watch(userProfileProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
-      // Áp dụng gradient nền vào Container gốc
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -41,8 +41,7 @@ class HomeScreen extends ConsumerWidget {
           data: (stories) {
             return CustomScrollView(
               slivers: [
-                HomeSliverAppBar(userProfile: userProfile),
-                // TODO: Thêm Section "Tiếp tục đọc"
+                const HomeSliverAppBar(), // SỬA: Bỏ tham số userProfile
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
                 RankingCarouselSection(stories: stories.take(5).toList()),
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -56,6 +55,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildLoadingSkeleton(BuildContext context) {
+    // ... nội dung hàm không đổi
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
@@ -124,4 +124,3 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
-

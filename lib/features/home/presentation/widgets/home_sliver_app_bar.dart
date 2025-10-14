@@ -12,19 +12,15 @@ class HomeSliverAppBar extends StatefulWidget {
 }
 
 class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
-  bool isScrolled = false;
   final ValueNotifier<bool> isScrolledNotifier = ValueNotifier(false);
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
     
-    // Sử dụng NotificationListener để theo dõi sự kiện cuộn
     return NotificationListener<ScrollNotification>(
       onNotification: (scrollNotification) {
         final scroll = scrollNotification.metrics.pixels;
-        // 130 là ngưỡng để chuyển đổi, bạn có thể điều chỉnh
         if (scroll > 130) {
           if (!isScrolledNotifier.value) {
             isScrolledNotifier.value = true;
@@ -39,7 +35,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
       child: SliverAppBar(
         pinned: true,
         expandedHeight: 180.0,
-        backgroundColor: Colors.transparent, // Nền chính sẽ trong suốt
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
@@ -51,22 +47,34 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
         flexibleSpace: ValueListenableBuilder<bool>(
           valueListenable: isScrolledNotifier,
           builder: (context, isScrolled, child) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              // Nền sẽ là Glassmorphism khi cuộn
-              child: ClipRRect(
-                child: BackdropFilter(
-                  filter: isScrolled ? ImageFilter.blur(sigmaX: 10, sigmaY: 10) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                  child: FlexibleSpaceBar(
-                    titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    // Title sẽ thay đổi dựa trên trạng thái cuộn
-                    title: isScrolled
-                        ? _buildCollapsedTitle(widget.userProfile, theme)
-                        : null,
-                    background: _buildExpandedBackground(widget.userProfile, theme),
+            // Sử dụng Stack để đặt BackdropFilter đúng vị trí
+            return Stack(
+              children: [
+                // Lớp nền mờ
+                Positioned.fill(
+                  child: ClipRRect(
+                    child: BackdropFilter(
+                      filter: isScrolled
+                          ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
+                          : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        color: isScrolled
+                            ? theme.colorScheme.background.withOpacity(0.5)
+                            : Colors.transparent,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                // Lớp nội dung (FlexibleSpaceBar)
+                FlexibleSpaceBar(
+                  titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  title: isScrolled
+                      ? _buildCollapsedTitle(widget.userProfile, theme)
+                      : null,
+                  background: _buildExpandedBackground(widget.userProfile, theme),
+                ),
+              ],
             );
           },
         ),
@@ -75,6 +83,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
   }
 
   Widget _buildExpandedBackground(AsyncValue<Profile?> userProfile, ThemeData theme) {
+     // ... (Nội dung hàm này không thay đổi)
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Column(
@@ -105,6 +114,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
   }
 
   Widget _buildCollapsedTitle(AsyncValue<Profile?> userProfile, ThemeData theme) {
+    // ... (Nội dung hàm này không thay đổi)
     return Row(
       children: userProfile.when(
         data: (profile) => [

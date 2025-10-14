@@ -1,52 +1,65 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Widget này tạo ra một Scaffold với BottomNavigationBar
-// để sử dụng trong ShellRoute của GoRouter.
 class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
     required this.navigationShell,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key ?? const ValueKey('ScaffoldWithNavBar'));
 
-  // 'navigationShell' quản lý trạng thái của các nhánh điều hướng (tabs)
   final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      // Hiển thị màn hình của tab hiện tại
+      // Mở rộng body ra sau cả bottom navigation bar
+      extendBody: true, 
       body: navigationShell,
-      // Thanh điều hướng dưới cùng
-      bottomNavigationBar: NavigationBar(
-        // Chỉ số của tab đang được chọn
-        selectedIndex: navigationShell.currentIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Trang chủ',
+      bottomNavigationBar: Container(
+        // Đặt màu nền trong suốt để hiệu ứng mờ có thể nhìn xuyên qua
+        color: Colors.transparent,
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+            child: BottomNavigationBar(
+              backgroundColor: isDarkMode
+                  ? theme.colorScheme.background.withOpacity(0.65)
+                  : theme.bottomNavigationBarTheme.backgroundColor?.withOpacity(0.8),
+              type: BottomNavigationBarType.fixed,
+              elevation: 0,
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home_rounded),
+                  label: 'Trang chủ',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.book_outlined),
+                  activeIcon: Icon(Icons.book_rounded),
+                  label: 'Tủ truyện',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person_rounded),
+                  label: 'Hồ sơ',
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.book),
-            icon: Icon(Icons.book_outlined),
-            label: 'Tủ truyện',
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.person),
-            icon: Icon(Icons.person_outline),
-            label: 'Hồ sơ',
-          ),
-        ],
-        // Hàm callback khi người dùng chọn một tab khác
-        onDestinationSelected: (int index) {
-          // Điều hướng đến nhánh tương ứng mà không làm mất trạng thái
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
+        ),
       ),
     );
   }
 }
+

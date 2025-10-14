@@ -25,7 +25,7 @@ class App extends ConsumerWidget {
       themeMode: ThemeMode.system,
 
       // Cấu hình router
-      routerConfig: appRouter,
+      routerConfig: router,
     );
   }
 }

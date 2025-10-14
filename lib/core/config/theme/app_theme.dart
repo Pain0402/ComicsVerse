@@ -1,61 +1,115 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-// Lớp quản lý Theme cho ứng dụng
 class AppTheme {
-  // Private constructor để ngăn việc tạo instance của lớp này
-  AppTheme._();
+  // --- Bảng màu cho Dark Mode (Chế độ tối) ---
+  static const Color primaryBackground = Color(0xFF12172D);
+  static const Color secondaryBackground = Color(0xFF1F295B);
+  static const Color accentCyan = Color(0xFF00FFFF);
+  static const Color accentMagenta = Color(0xFFF800FF);
+  static const Color textPrimary = Color(0xE6FFFFFF); // 90% opacity
+  static const Color textSecondary = Color(0xB3B0B8E7); // 70% opacity
+  static const Color glassBackground = Color(0xA62E285D); // rgba(46, 40, 93, 0.65)
+  static const Color glowColor = Color(0x2600FFFF); // rgba(0, 255, 255, 0.15)
 
-  // Theme cho chế độ sáng (Light Mode)
-  static final ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    fontFamily: 'Inter',
-    brightness: Brightness.light,
-    primaryColor: const Color(0xFF6200EE),
-    scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-    colorScheme: const ColorScheme.light(
-      primary: Color(0xFF6200EE),
-      secondary: Color(0xFF03DAC6),
-      background: Color(0xFFFFFFFF),
-      surface: Color(0xFFFFFFFF),
-      onPrimary: Colors.white,
-      onSecondary: Colors.black,
-      onBackground: Colors.black,
-      onSurface: Colors.black,
-      error: Color(0xFFB00020),
-      onError: Colors.white,
-    ),
-    appBarTheme: const AppBarTheme(
-      color: Color(0xFF6200EE),
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: TextStyle(
-          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
-    ),
-  );
+  // --- Bảng màu cho Light Mode (Chế độ sáng) ---
+  static const Color primaryBackgroundLight = Color(0xFFF0F2FF);
+  static const Color secondaryBackgroundLight = Color(0xFFFFFFFF);
+  static const Color accentPurpleLight = Color(0xFF6A00F4);
+  static const Color accentPinkLight = Color(0xFFE342FF);
+  static const Color textPrimaryLight = Color(0xFF12172D);
+  static const Color textSecondaryLight = Color(0xFF5C6898);
+  static const Color glassBackgroundLight = Color(0xB3FFFFFF); // rgba(255, 255, 255, 0.7)
+  static const Color glowColorLight = Color(0x1A6A00F4); // rgba(106, 0, 244, 0.1)
 
-  // Theme cho chế độ tối (Dark Mode)
   static final ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    fontFamily: 'Inter',
     brightness: Brightness.dark,
-    primaryColor: const Color(0xFFBB86FC),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    primaryColor: accentCyan,
+    scaffoldBackgroundColor: Colors.transparent, // Nền sẽ được xử lý bởi Container
     colorScheme: const ColorScheme.dark(
-      primary: Color(0xFFBB86FC),
-      secondary: Color(0xFF03DAC6),
-      background: Color(0xFF121212),
-      surface: Color(0xFF1E1E1E),
+      primary: accentCyan,
+      secondary: accentMagenta,
+      background: primaryBackground,
+      surface: secondaryBackground, // Nền cho Card
       onPrimary: Colors.black,
-      onSecondary: Colors.black,
-      onBackground: Colors.white,
-      onSurface: Colors.white,
-      error: Color(0xFFCF6679),
-      onError: Colors.black,
+      onSecondary: Colors.white,
+      onBackground: textPrimary,
+      onSurface: textPrimary,
+      surfaceVariant: secondaryBackground, // Dùng cho các Card ít nổi bật hơn
+      onSurfaceVariant: textSecondary,
+    ),
+    textTheme: TextTheme(
+      displayLarge: GoogleFonts.bebasNeue(fontSize: 48, color: textPrimary),
+      headlineLarge: GoogleFonts.poppins(
+          fontSize: 32, fontWeight: FontWeight.bold, color: textPrimary),
+      headlineMedium: GoogleFonts.poppins(
+          fontSize: 24, fontWeight: FontWeight.w600, color: textPrimary),
+      bodyLarge: GoogleFonts.poppins(
+          fontSize: 16, fontWeight: FontWeight.w500, color: textPrimary),
+      bodyMedium: GoogleFonts.poppins(
+          fontSize: 14, fontWeight: FontWeight.normal, color: textPrimary),
+      bodySmall: GoogleFonts.poppins(
+          fontSize: 12, fontWeight: FontWeight.normal, color: textSecondary),
     ),
     appBarTheme: const AppBarTheme(
-      color: Color(0xFF1E1E1E),
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: TextStyle(
-          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: Colors.transparent,
+      selectedItemColor: accentCyan,
+      unselectedItemColor: textSecondary,
+      selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      unselectedLabelStyle: GoogleFonts.poppins(),
     ),
   );
+
+  static final ThemeData lightTheme = ThemeData(
+      brightness: Brightness.light,
+      primaryColor: accentPurpleLight,
+      scaffoldBackgroundColor: primaryBackgroundLight,
+      colorScheme: const ColorScheme.light(
+        primary: accentPurpleLight,
+        secondary: accentPinkLight,
+        background: primaryBackgroundLight,
+        surface: secondaryBackgroundLight,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onBackground: textPrimaryLight,
+        onSurface: textPrimaryLight,
+        surfaceVariant: Color(0xFFE8EAF6),
+        onSurfaceVariant: textSecondaryLight,
+      ),
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.bebasNeue(fontSize: 48, color: textPrimaryLight),
+        headlineLarge: GoogleFonts.poppins(
+            fontSize: 32, fontWeight: FontWeight.bold, color: textPrimaryLight),
+        headlineMedium: GoogleFonts.poppins(
+            fontSize: 24, fontWeight: FontWeight.w600, color: textPrimaryLight),
+        bodyLarge: GoogleFonts.poppins(
+            fontSize: 16, fontWeight: FontWeight.w500, color: textPrimaryLight),
+        bodyMedium: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: textPrimaryLight),
+        bodySmall: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: textSecondaryLight),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: textPrimaryLight),
+        titleTextStyle: TextStyle(color: textPrimaryLight),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: accentPurpleLight,
+        unselectedItemColor: textSecondaryLight,
+        selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.poppins(),
+      ),
+    );
 }
+

@@ -8,6 +8,8 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../presentation/screens/scaffold_with_nav_bar.dart';
+import 'package:comicsapp/features/home/domain/entities/story.dart';
+import 'package:comicsapp/features/home/presentation/screens/story_details_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -27,6 +29,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/story/:storyId',
+        builder: (context, state) {
+          final storyId = state.pathParameters['storyId']!;
+          // Lấy object Story từ extra để dùng cho Hero Animation
+          final story = state.extra as Story?;
+          return StoryDetailsScreen(storyId: storyId, story: story);
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

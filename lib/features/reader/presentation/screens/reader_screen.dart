@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comicsapp/features/home/domain/entities/chapter.dart';
 import 'package:comicsapp/features/reader/presentation/providers/reader_providers.dart';
+import 'package:comicsapp/features/reader/presentation/widgets/bottom_sheets/chapter_list_bottom_sheet.dart';
+import 'package:comicsapp/features/reader/presentation/widgets/bottom_sheets/comments_bottom_sheet.dart';
+import 'package:comicsapp/features/reader/presentation/widgets/bottom_sheets/reader_settings_bottom_sheet.dart';
 import 'package:comicsapp/features/reader/presentation/widgets/reader_app_bar.dart';
 import 'package:comicsapp/features/reader/presentation/widgets/reader_bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +16,14 @@ class ReaderScreen extends ConsumerStatefulWidget {
   final String storyId;
   final String storyTitle;
   final Chapter chapter;
+  final List<Chapter> allChapters; // THÊM MỚI: Nhận danh sách tất cả các chương
 
   const ReaderScreen({
     super.key,
     required this.storyId,
     required this.storyTitle,
     required this.chapter,
+    required this.allChapters, // Yêu cầu tham số này
   });
 
   @override
@@ -26,9 +31,18 @@ class ReaderScreen extends ConsumerStatefulWidget {
 }
 
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
-  // Trạng thái cục bộ của màn hình đọc
-  bool _showControls = true; // Hiển thị thanh điều khiển
-  ReadingMode _readingMode = ReadingMode.vertical; // Chế độ đọc mặc định
+  bool _showControls = true;
+  ReadingMode _readingMode = ReadingMode.vertical;
+
+  // HÀM MỚI: Hàm chung để hiển thị BottomSheet với hiệu ứng Glassmorphism
+  void _showGlassBottomSheet(BuildContext context, {required Widget child}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent, // Quan trọng để hiệu ứng blur hoạt động
+      isScrollControlled: true, // Cho phép bottom sheet chiếm nhiều không gian hơn
+      builder: (context) => child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,23 +50,23 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // Nền đen tuyền theo yêu cầu UI/UX
       backgroundColor: Colors.black,
-      // extendBodyBehindAppBar và extendBody để nội dung tràn ra sau các thanh điều khiển
       extendBodyBehindAppBar: true,
       extendBody: true,
-      // Ẩn/hiện AppBar dựa trên trạng thái _showControls
       appBar: _showControls
           ? ReaderAppBar(
               storyTitle: widget.storyTitle,
               chapterTitle: 'Chương ${widget.chapter.chapterNumber}: ${widget.chapter.title}',
               onSettingsTap: () {
-                // TODO: Mở bottom sheet cài đặt (độ sáng, etc.)
+                // CẬP NHẬT: Gọi hàm hiển thị bottom sheet cài đặt
+                _showGlassBottomSheet(
+                  context,
+                  child: const ReaderSettingsBottomSheet(),
+                );
               },
             )
           : null,
       body: GestureDetector(
-        // Khi nhấn vào vùng nội dung, đảo ngược trạng thái hiển thị của các thanh điều khiển
         onTap: () => setState(() => _showControls = !_showControls),
         child: chapterContentAsync.when(
           loading: () => _buildLoadingSkeleton(),
@@ -75,26 +89,36 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 ),
               );
             }
-            // Lựa chọn widget đọc dựa trên chế độ đã chọn
             return _readingMode == ReadingMode.vertical
                 ? _buildVerticalReader(imageUrls)
                 : _buildHorizontalReader(imageUrls);
           },
         ),
       ),
-      // Ẩn/hiện BottomBar dựa trên trạng thái _showControls
       bottomNavigationBar: AnimatedSize(
         duration: const Duration(milliseconds: 200),
         child: _showControls
             ? ReaderBottomBar(
                 onChapterListTap: () {
-                  // TODO: Mở bottom sheet danh sách chương
+                  // CẬP NHẬT: Gọi hàm hiển thị bottom sheet danh sách chương
+                  _showGlassBottomSheet(
+                    context,
+                    child: ChapterListBottomSheet(
+                      storyId: widget.storyId,
+                      storyTitle: widget.storyTitle,
+                      allChapters: widget.allChapters,
+                      currentChapter: widget.chapter,
+                    ),
+                  );
                 },
                 onCommentTap: () {
-                  // TODO: Mở bottom sheet bình luận
+                  // CẬP NHẬT: Gọi hàm hiển thị bottom sheet bình luận
+                  _showGlassBottomSheet(
+                    context,
+                    child: CommentsBottomSheet(chapterId: widget.chapter.chapterId),
+                  );
                 },
                 onReadingModeTap: () {
-                  // Thay đổi chế độ đọc
                   setState(() {
                     _readingMode = _readingMode == ReadingMode.vertical
                         ? ReadingMode.horizontal
@@ -110,10 +134,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  /// Widget xây dựng trình đọc kiểu cuộn dọc (Webtoon)
+  // ... các hàm build còn lại không đổi ...
   Widget _buildVerticalReader(List<String> imageUrls) {
     return ListView.builder(
-      padding: EdgeInsets.zero, // Xóa padding mặc định của ListView
+      padding: EdgeInsets.zero,
       itemCount: imageUrls.length,
       itemBuilder: (context, index) {
         return _buildChapterImage(imageUrls[index]);
@@ -121,7 +145,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  /// Widget xây dựng trình đọc kiểu lật trang (Manga)
   Widget _buildHorizontalReader(List<String> imageUrls) {
     return PageView.builder(
       itemCount: imageUrls.length,
@@ -131,7 +154,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  /// Widget hiển thị một ảnh của chương, có hỗ trợ zoom và placeholder
   Widget _buildChapterImage(String imageUrl) {
     return InteractiveViewer(
       minScale: 1.0,
@@ -139,17 +161,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       child: CachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.fitWidth,
-        // Placeholder hiển thị trong khi tải ảnh
         placeholder: (context, url) => Shimmer.fromColors(
           baseColor: Colors.grey[900]!,
           highlightColor: Colors.grey[800]!,
           child: Container(
-            // Giả lập chiều cao để Shimmer có kích thước hợp lý
             height: MediaQuery.of(context).size.height * 0.8,
             color: Colors.black,
           ),
         ),
-        // Widget hiển thị khi có lỗi tải ảnh
         errorWidget: (context, url, error) => const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -167,7 +186,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  /// Widget hiển thị skeleton loading cho toàn màn hình
   Widget _buildLoadingSkeleton() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[900]!,
@@ -185,3 +203,4 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 }
+

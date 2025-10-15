@@ -233,12 +233,13 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: chapters.isNotEmpty ? () {
-                  // CẬP NHẬT: Điều hướng đến chương đầu tiên
+                  // CẬP NHẬT: Điều hướng đến chương đầu tiên và truyền cả danh sách chương
                   context.push(
                     '/story/${story.storyId}/chapter/${chapters.first.chapterId}',
                     extra: {
                       'storyTitle': story.title,
                       'chapter': chapters.first,
+                      'allChapters': chapters, // Thêm danh sách tất cả các chương
                     },
                   );
                 } : null,
@@ -354,7 +355,7 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
     );
   }
 
-  // CẬP NHẬT: Truyền story vào ChapterListItem
+  // CẬP NHẬT: Truyền story và cả danh sách chương vào ChapterListItem
   Widget _buildChapterList(Story story, List<Chapter> chapters) {
     if (chapters.isEmpty) {
       return const SliverFillRemaining(child: Center(child: Text('Chưa có chương nào.')));
@@ -362,7 +363,11 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          return ChapterListItem(story: story, chapter: chapters[index]);
+          return ChapterListItem(
+            story: story, 
+            chapter: chapters[index], 
+            allChapters: chapters, // Truyền danh sách chương
+          );
         },
         childCount: chapters.length,
       ),
@@ -370,11 +375,17 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
   }
 }
 
-// CẬP NHẬT: ChapterListItem để xử lý điều hướng
 class ChapterListItem extends StatelessWidget {
   final Story story;
   final Chapter chapter;
-  const ChapterListItem({super.key, required this.story, required this.chapter});
+  final List<Chapter> allChapters; // Thêm tham số này
+
+  const ChapterListItem({
+    super.key, 
+    required this.story, 
+    required this.chapter,
+    required this.allChapters, // Yêu cầu tham số này
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -386,6 +397,7 @@ class ChapterListItem extends StatelessWidget {
           extra: {
             'storyTitle': story.title,
             'chapter': chapter,
+            'allChapters': allChapters, // Truyền cả danh sách chương đi
           },
         );
       },

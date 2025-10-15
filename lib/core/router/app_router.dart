@@ -57,12 +57,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: 'chapter/:chapterId',
             builder: (context, state) {
               final storyId = state.pathParameters['storyId']!;
+              // CẬP NHẬT: Lấy dữ liệu từ extra một cách an toàn hơn
               final extra = state.extra as Map<String, dynamic>?;
               final storyTitle = extra?['storyTitle'] as String? ?? 'Đang tải...';
               final chapter = extra?['chapter'] as Chapter?;
+              // THÊM MỚI: Lấy danh sách tất cả các chương
+              final allChapters = extra?['allChapters'] as List<Chapter>? ?? [];
               
               if (chapter == null) {
-                // Xử lý trường hợp không có dữ liệu chapter được truyền qua
                 return const Scaffold(body: Center(child: Text("Lỗi: Không tìm thấy thông tin chương.")));
               }
 
@@ -70,6 +72,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 storyId: storyId,
                 storyTitle: storyTitle,
                 chapter: chapter,
+                allChapters: allChapters, // Truyền vào ReaderScreen
               );
             },
           ),
@@ -138,3 +141,4 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     },
   );
 });
+

@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 abstract class AuthRepository {
   // Lấy stream theo dõi sự thay đổi trạng thái xác thực (đăng nhập, đăng xuất).
   Stream<User?> get authStateChanges;
-  
+
   // Lấy người dùng hiện tại
   User? get currentUser;
 
@@ -16,10 +16,10 @@ abstract class AuthRepository {
   });
 
   // Chức năng đăng ký bằng email và mật khẩu.
-  Future<void> signUp({
-    required String email,
-    required String password,
-  });
+  Future<void> signUp({required String email, required String password});
+
+  // Chức năng đăng nhập bằng Google.
+  Future<void> signInWithGoogle();
 
   // Chức năng đăng xuất.
   Future<void> signOut();

@@ -9,8 +9,9 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._supabaseClient);
 
   @override
-  Stream<User?> get authStateChanges => _supabaseClient.auth.onAuthStateChange.map((authState) => authState.session?.user);
-  
+  Stream<User?> get authStateChanges => _supabaseClient.auth.onAuthStateChange
+      .map((authState) => authState.session?.user);
+
   @override
   User? get currentUser => _supabaseClient.auth.currentUser;
 
@@ -31,14 +32,23 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signUp({required String email, required String password}) async {
     try {
-      await _supabaseClient.auth.signUp(
-        email: email,
-        password: password,
+      await _supabaseClient.auth.signUp(email: email, password: password);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    try {
+      // Hàm này sẽ tự động mở một web view để người dùng đăng nhập
+      // và xử lý redirect về ứng dụng nhờ các cấu hình native ở trên.
+      await _supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.google,
+        // URL mà trình duyệt sẽ quay về sau khi đăng nhập thành công
+        redirectTo: 'com.example.comicsapp://callback',
       );
     } catch (e) {
       rethrow;

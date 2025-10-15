@@ -14,7 +14,7 @@ import 'package:comicsapp/features/home/domain/entities/story.dart';
 import 'package:comicsapp/features/home/presentation/screens/story_details_screen.dart';
 import 'package:comicsapp/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:comicsapp/presentation/screens/splash_screen.dart';
-
+import 'package:comicsapp/features/search/presentation/screens/search_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -31,10 +31,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
@@ -42,6 +39,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
       ),
       GoRoute(
         path: '/story/:storyId',
@@ -58,12 +59,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final storyId = state.pathParameters['storyId']!;
               final extra = state.extra as Map<String, dynamic>?;
-              final storyTitle = extra?['storyTitle'] as String? ?? 'Đang tải...';
+              final storyTitle =
+                  extra?['storyTitle'] as String? ?? 'Đang tải...';
               final chapter = extra?['chapter'] as Chapter?;
-              
+
               if (chapter == null) {
                 // Xử lý trường hợp không có dữ liệu chapter được truyền qua
-                return const Scaffold(body: Center(child: Text("Lỗi: Không tìm thấy thông tin chương.")));
+                return const Scaffold(
+                  body: Center(
+                    child: Text("Lỗi: Không tìm thấy thông tin chương."),
+                  ),
+                );
               }
 
               return ReaderScreen(
@@ -73,36 +79,46 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-        ]
+        ],
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
         },
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => const HomeScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/library',
-              builder: (context, state) => const LibraryScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (context, state) => const ProfileScreen(),
-            ),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/library',
+                builder: (context, state) => const LibraryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
     ],
     // Logic điều hướng tự động
-     // SỬA ĐỔI: Cập nhật toàn bộ logic điều hướng tự động
+    // SỬA ĐỔI: Cập nhật toàn bộ logic điều hướng tự động
     redirect: (context, state) {
       // Trong khi trạng thái xác thực đang tải, chúng ta không làm gì cả.
       // Người dùng sẽ tiếp tục thấy màn hình chờ (SplashScreen).
@@ -112,7 +128,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // Xác định người dùng đã đăng nhập hay chưa.
       final isLoggedIn = authState.valueOrNull != null;
-      
+
       // Lấy vị trí hiện tại của người dùng.
       final location = state.uri.toString();
       final isAtSplash = location == '/splash';

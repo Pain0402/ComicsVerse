@@ -1,3 +1,5 @@
+import 'package:comicsapp/features/home/domain/entities/chapter.dart';
+import 'package:comicsapp/features/reader/presentation/screens/reader_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +24,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/login',
+    initialLocation: '/splash', // BẮT ĐẦU TỪ SPLASH SCREEN
     debugLogDiagnostics: true,
     routes: [
       GoRoute(
@@ -49,6 +51,29 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final story = state.extra as Story?;
           return StoryDetailsScreen(storyId: storyId, story: story);
         },
+        // ĐỊNH NGHĨA ROUTE LỒNG NHAU CHO MÀN HÌNH ĐỌC TRUYỆN
+        routes: [
+          GoRoute(
+            path: 'chapter/:chapterId',
+            builder: (context, state) {
+              final storyId = state.pathParameters['storyId']!;
+              final extra = state.extra as Map<String, dynamic>?;
+              final storyTitle = extra?['storyTitle'] as String? ?? 'Đang tải...';
+              final chapter = extra?['chapter'] as Chapter?;
+              
+              if (chapter == null) {
+                // Xử lý trường hợp không có dữ liệu chapter được truyền qua
+                return const Scaffold(body: Center(child: Text("Lỗi: Không tìm thấy thông tin chương.")));
+              }
+
+              return ReaderScreen(
+                storyId: storyId,
+                storyTitle: storyTitle,
+                chapter: chapter,
+              );
+            },
+          ),
+        ]
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -113,7 +138,3 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     },
   );
 });
-
-
-
-

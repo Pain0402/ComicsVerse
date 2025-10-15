@@ -6,6 +6,7 @@ import 'package:comicsapp/features/home/presentation/providers/home_providers.da
 import 'package:comicsapp/features/home/presentation/widgets/story_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:comicsapp/features/home/domain/entities/chapter.dart';
 import 'package:comicsapp/features/library/presentation/providers/library_providers.dart';
@@ -55,10 +56,10 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
                 slivers: [
                   _buildSliverAppBar(context, story, imageUrl),
                   _buildHeaderSection(context, story),
-                  _buildActionButtons(context, ref, story), // Sửa đổi hàm này
-                  _buildSynopsisSection(context, story), // Widget mới cho tóm tắt
+                  _buildActionButtons(context, ref, story, chapters), 
+                  _buildSynopsisSection(context, story), 
                   _buildChapterListHeader(context, chapters.length),
-                  _buildChapterList(chapters),
+                  _buildChapterList(story, chapters),
                 ],
               );
             },
@@ -220,7 +221,7 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
   }
 
   // SỬA ĐỔI HOÀN TOÀN: Tái cấu trúc khu vực hành động
-  Widget _buildActionButtons(BuildContext context, WidgetRef ref, Story story) {
+  Widget _buildActionButtons(BuildContext context, WidgetRef ref, Story story, List<Chapter> chapters) {
     final theme = Theme.of(context);
     final isBookmarkedAsync = ref.watch(isBookmarkedProvider(story.storyId));
 
@@ -231,7 +232,16 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () { /* TODO: Navigate to first chapter */ },
+                onPressed: chapters.isNotEmpty ? () {
+                  // CẬP NHẬT: Điều hướng đến chương đầu tiên
+                  context.push(
+                    '/story/${story.storyId}/chapter/${chapters.first.chapterId}',
+                    extra: {
+                      'storyTitle': story.title,
+                      'chapter': chapters.first,
+                    },
+                  );
+                } : null,
                 icon: const Icon(Icons.play_arrow_rounded),
                 label: const Text('Đọc ngay'),
                 style: ElevatedButton.styleFrom(
@@ -344,14 +354,15 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
     );
   }
 
-  Widget _buildChapterList(List<Chapter> chapters) {
+  // CẬP NHẬT: Truyền story vào ChapterListItem
+  Widget _buildChapterList(Story story, List<Chapter> chapters) {
     if (chapters.isEmpty) {
       return const SliverFillRemaining(child: Center(child: Text('Chưa có chương nào.')));
     }
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          return ChapterListItem(chapter: chapters[index]);
+          return ChapterListItem(story: story, chapter: chapters[index]);
         },
         childCount: chapters.length,
       ),
@@ -359,22 +370,32 @@ class _StoryDetailsScreenState extends State<StoryDetailsScreen> {
   }
 }
 
-// ... class ChapterListItem không đổi ...
+// CẬP NHẬT: ChapterListItem để xử lý điều hướng
 class ChapterListItem extends StatelessWidget {
+  final Story story;
   final Chapter chapter;
-  const ChapterListItem({super.key, required this.chapter});
+  const ChapterListItem({super.key, required this.story, required this.chapter});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ListTile(
-      onTap: () {},
+      onTap: () {
+        context.push(
+          '/story/${story.storyId}/chapter/${chapter.chapterId}',
+          extra: {
+            'storyTitle': story.title,
+            'chapter': chapter,
+          },
+        );
+      },
       title: Text('Chương ${chapter.chapterNumber}: ${chapter.title}'),
       subtitle: Text('Cập nhật: ${chapter.releaseDate.toLocal().toString().split(' ')[0]}'),
       trailing: chapter.isVip ? Icon(Icons.lock_outline_rounded, color: theme.colorScheme.secondary) : null,
     );
   }
 }
+
 
 
 

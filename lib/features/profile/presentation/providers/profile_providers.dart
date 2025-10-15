@@ -12,8 +12,13 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 });
 
 // 2. FutureProvider để lấy dữ liệu hồ sơ ban đầu
-final userProfileProvider = FutureProvider<Profile?>((ref) {
-  return ref.watch(profileRepositoryProvider).getUserProfile();
+final userProfileProvider = StreamProvider.autoDispose<Profile?>((ref) async* {
+  final profileRepository = ref.watch(profileRepositoryProvider);
+  // Ban đầu, tải dữ liệu người dùng
+  yield await profileRepository.getUserProfile();
+
+  // Trong tương lai, có thể lắng nghe các stream thay đổi ở đây
+  // Ví dụ: ref.watch(notificationStreamProvider).
 });
 
 // 3. StateNotifierProvider để quản lý trạng thái cập nhật hồ sơ

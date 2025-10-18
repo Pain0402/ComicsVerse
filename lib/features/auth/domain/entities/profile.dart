@@ -19,6 +19,7 @@ class Profile {
     this.reviewsCount = 0,
   });
 
+  /// Factory này dùng cho RPC `get_user_profile_details` trả về cấu trúc lồng nhau
   factory Profile.fromMap(Map<String, dynamic> map) {
     // Lấy dữ liệu profile và stats từ JSON trả về của RPC
     final profileMap = map['profile'] as Map<String, dynamic>? ?? {};
@@ -33,6 +34,16 @@ class Profile {
       bookmarkedStoriesCount: statsMap['bookmarked_stories_count'] ?? 0,
       commentsCount: statsMap['comments_count'] ?? 0,
       reviewsCount: statsMap['reviews_count'] ?? 0,
+    );
+  }
+
+  /// Factory mới để parse dữ liệu profile được join trực tiếp từ câu lệnh select
+  factory Profile.fromEmbeddedMap(Map<String, dynamic> map) {
+    return Profile(
+      id: map['id'] ?? '',
+      displayName: map['display_name'],
+      avatarUrl: map['avatar_url'],
+      role: map['role'] ?? 'reader',
     );
   }
 }

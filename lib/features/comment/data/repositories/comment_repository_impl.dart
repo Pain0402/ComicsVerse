@@ -10,24 +10,57 @@ class CommentRepositoryImpl implements CommentRepository {
 
   @override
   Stream<List<CommentEntity>> watchComments(String chapterId) {
-    // Tạo một stream controller để quản lý dữ liệu
     final controller = StreamController<List<CommentEntity>>();
+    RealtimeChannel? channel;
 
-    // Lắng nghe các thay đổi trên bảng 'Comment'
-    final subscription = _supabaseClient
-        .from('Comment')
-        .stream(primaryKey: ['comment_id'])
-        .eq('chapter_id', chapterId)
-        .order('created_at', ascending: true)
-        .listen((maps) {
-          // Khi có dữ liệu mới, chuyển đổi nó thành danh sách CommentEntity
-          final comments = maps.map((map) => CommentEntity.fromMap(map)).toList();
+    // Hàm để fetch dữ liệu và đẩy vào stream
+    Future<void> fetchAndEmitComments() async {
+      try {
+        final data = await _supabaseClient
+            .from('Comment')
+            .select('*, profiles!inner(id, display_name, avatar_url, role)')
+            .eq('chapter_id', chapterId)
+            .order('created_at', ascending: true);
+        
+        final comments = data.map((map) => CommentEntity.fromMap(map)).toList();
+        if (!controller.isClosed) {
           controller.add(comments);
-        });
-    
-    // Khi stream bị hủy, đóng subscription để tránh memory leak
+        }
+      } catch (e) {
+        if (!controller.isClosed) {
+          controller.addError(e);
+        }
+      }
+    }
+
+    // 1. Fetch dữ liệu lần đầu tiên
+    fetchAndEmitComments();
+
+    // 2. Lắng nghe thay đổi trên Realtime Channel
+    channel = _supabaseClient
+        .channel('public:Comment:chapter_id=eq.$chapterId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'Comment',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'chapter_id',
+            value: chapterId,
+          ),
+          callback: (payload) {
+            // Khi có bất kỳ thay đổi nào, fetch lại toàn bộ danh sách
+            fetchAndEmitComments();
+          },
+        )
+        .subscribe();
+
+    // Khi stream bị hủy, đóng channel và controller
     controller.onCancel = () {
-      subscription.cancel();
+      if (channel != null) {
+        _supabaseClient.removeChannel(channel);
+      }
+      controller.close();
     };
 
     return controller.stream;
@@ -57,3 +90,4 @@ class CommentRepositoryImpl implements CommentRepository {
     }
   }
 }
+

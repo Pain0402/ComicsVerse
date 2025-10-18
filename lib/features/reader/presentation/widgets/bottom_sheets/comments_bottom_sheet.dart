@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:comicsapp/features/comment/domain/entities/comment_entity.dart';
 import 'package:comicsapp/features/comment/presentation/providers/comment_providers.dart';
 import 'package:comicsapp/features/comment/presentation/widgets/comment_list_item.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ class CommentsBottomSheet extends ConsumerStatefulWidget {
 
 class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   final _commentController = TextEditingController();
+  // State để lưu thông tin bình luận đang được trả lời
+  CommentEntity? _replyingToComment;
 
   @override
   void dispose() {
@@ -30,11 +33,16 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     await ref.read(commentPostControllerProvider.notifier).postComment(
           content: content,
           chapterId: widget.chapterId,
+          // Gửi kèm parent_id nếu đang trả lời bình luận
+          parentCommentId: _replyingToComment?.id,
         );
     
-    // Sau khi gửi, xóa nội dung trong text field
+    // Sau khi gửi, xóa nội dung trong text field và reset trạng thái trả lời
     if (mounted) {
       _commentController.clear();
+      setState(() {
+        _replyingToComment = null;
+      });
       // Ẩn bàn phím
       FocusScope.of(context).unfocus();
     }
@@ -43,7 +51,11 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // CẬP NHẬT: Sử dụng nestedCommentsProvider để lấy dữ liệu dạng cây
+    final comments = ref.watch(nestedCommentsProvider(widget.chapterId));
+    // Vẫn lắng nghe stream provider gốc để biết trạng thái loading/error ban đầu
     final commentsAsync = ref.watch(commentsStreamProvider(widget.chapterId));
+
     final isPosting = ref.watch(commentPostControllerProvider).isLoading;
 
     ref.listen(commentPostControllerProvider, (_, state) {
@@ -91,7 +103,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                 child: commentsAsync.when(
                   loading: () => _buildLoadingSkeleton(),
                   error: (err, stack) => Center(child: Text('Lỗi tải bình luận: $err')),
-                  data: (comments) {
+                  data: (_) { // Dữ liệu từ stream gốc chỉ dùng để trigger, dữ liệu thật lấy từ provider 'comments'
                     if (comments.isEmpty) {
                       return Center(
                         child: Column(
@@ -107,38 +119,75 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                     return ListView.builder(
                       itemCount: comments.length,
                       itemBuilder: (context, index) {
-                        return CommentListItem(comment: comments[index]);
+                        return CommentListItem(
+                          comment: comments[index],
+                          // Callback để set trạng thái đang trả lời
+                          onReply: (commentToReply) {
+                            setState(() {
+                              _replyingToComment = commentToReply;
+                            });
+                            FocusScope.of(context).requestFocus(); // Focus vào text field
+                          },
+                        );
                       },
                     );
                   },
                 ),
               ),
+              // Giao diện nhập liệu
               Padding(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 16,
-                  right: 16,
-                  top: 8,
                 ),
                 child: SafeArea(
-                  child: TextField(
-                    controller: _commentController,
-                    decoration: InputDecoration(
-                      hintText: 'Viết bình luận...',
-                      filled: true,
-                      fillColor: theme.colorScheme.surface.withOpacity(0.8),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: isPosting 
-                        ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
-                        : IconButton(
-                            icon: Icon(Icons.send_rounded, color: theme.colorScheme.primary),
-                            onPressed: _postComment,
+                  child: Column(
+                    children: [
+                      // Hiển thị thông báo khi đang trả lời ai đó
+                      if (_replyingToComment != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Đang trả lời @${_replyingToComment!.author.displayName ?? '...'}',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 16),
+                                onPressed: () {
+                                  setState(() {
+                                    _replyingToComment = null;
+                                  });
+                                },
+                              )
+                            ],
                           ),
-                    ),
-                    onSubmitted: (_) => _postComment(),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: TextField(
+                          controller: _commentController,
+                          decoration: InputDecoration(
+                            hintText: 'Viết bình luận...',
+                            filled: true,
+                            fillColor: theme.colorScheme.surface.withOpacity(0.8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: BorderSide.none,
+                            ),
+                            suffixIcon: isPosting 
+                              ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
+                              : IconButton(
+                                  icon: Icon(Icons.send_rounded, color: theme.colorScheme.primary),
+                                  onPressed: _postComment,
+                                ),
+                          ),
+                          onSubmitted: (_) => _postComment(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

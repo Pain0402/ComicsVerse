@@ -1,26 +1,26 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Định nghĩa một "hợp đồng" (contract) cho các chức năng xác thực.
-// Lớp này không quan tâm việc xác thực được thực hiện bằng Supabase, Firebase hay một API tự viết.
+/// Defines the contract for authentication functionalities.
+/// This abstract class is independent of the specific auth provider (e.g., Supabase, Firebase).
 abstract class AuthRepository {
-  // Lấy stream theo dõi sự thay đổi trạng thái xác thực (đăng nhập, đăng xuất).
+  /// Stream that emits user authentication state changes (e.g., login, logout).
   Stream<User?> get authStateChanges;
 
-  // Lấy người dùng hiện tại
+  /// Gets the currently authenticated user, if any.
   User? get currentUser;
 
-  // Chức năng đăng nhập bằng email và mật khẩu.
+  /// Signs in a user with email and password.
   Future<void> signInWithPassword({
     required String email,
     required String password,
   });
 
-  // Chức năng đăng ký bằng email và mật khẩu.
+  /// Signs up a new user with email and password.
   Future<void> signUp({required String email, required String password});
 
-  // Chức năng đăng nhập bằng Google.
+  /// Signs in a user using Google OAuth.
   Future<void> signInWithGoogle();
 
-  // Chức năng đăng xuất.
+  /// Signs out the current user.
   Future<void> signOut();
 }

@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../providers/auth_providers.dart';
 import '../widgets/auth_field.dart';
 
-// Chuyển thành ConsumerStatefulWidget
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
@@ -24,7 +22,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        // Lấy AuthRepository từ provider và gọi hàm signUp
         final authRepository = ref.read(authRepositoryProvider);
         await authRepository.signUp(
           email: _emailController.text.trim(),
@@ -32,9 +29,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đăng ký thành công! Vui lòng kiểm tra email.'),
-            ),
+            const SnackBar(content: Text('Sign-up successful! Please check your email.')),
           );
           context.go('/login');
         }
@@ -65,7 +60,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng ký')),
+      appBar: AppBar(title: const Text('Sign Up')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -78,7 +73,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const Icon(Icons.book_online, size: 80),
                 const SizedBox(height: 20),
                 Text(
-                  'Tham gia cộng đồng StoryVerse',
+                  'Join the ComicsVerse Community',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
@@ -89,7 +84,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty || !value.contains('@')) {
-                      return 'Vui lòng nhập email hợp lệ';
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -97,11 +92,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const SizedBox(height: 16),
                 AuthField(
                   controller: _passwordController,
-                  hintText: 'Mật khẩu',
+                  hintText: 'Password',
                   isPassword: true,
                   validator: (value) {
                     if (value == null || value.isEmpty || value.length < 6) {
-                      return 'Mật khẩu phải có ít nhất 6 ký tự';
+                      return 'Password must be at least 6 characters';
                     }
                     return null;
                   },
@@ -109,20 +104,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _signUp,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                  ),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Đăng ký'),
+                      : const Text('Sign Up'),
                 ),
                 TextButton(
                   onPressed: () => context.go('/login'),
-                  child: const Text('Đã có tài khoản? Đăng nhập'),
+                  child: const Text('Already have an account? Sign In'),
                 ),
               ],
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Widget dùng chung cho các trường nhập liệu trong form xác thực
+/// A reusable text form field for authentication forms.
 class AuthField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;

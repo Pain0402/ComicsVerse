@@ -1,10 +1,7 @@
-// lib/features/auth/presentation/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../domain/repositories/auth_repository.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_field.dart';
@@ -21,9 +18,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _isGoogleLoading = false; // Thêm state cho nút Google
+  bool _isGoogleLoading = false;
 
-  // Hàm đăng nhập bằng Email/Password (Giữ nguyên)
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -33,7 +29,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        // GoRouter redirect sẽ tự động xử lý việc chuyển trang
+        // Navigation is handled automatically by GoRouter's redirect logic.
       } on AuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -51,13 +47,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  // Hàm mới để đăng nhập bằng Google
   Future<void> _signInWithGoogle() async {
     setState(() => _isGoogleLoading = true);
     try {
       final authRepository = ref.read(authRepositoryProvider);
       await authRepository.signInWithGoogle();
-      // GoRouter redirect sẽ tự động xử lý việc chuyển trang
+      // Navigation is handled automatically by GoRouter's redirect logic.
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng nhập')),
+      appBar: AppBar(title: const Text('Sign In')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -97,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const Icon(Icons.book, size: 80),
                 const SizedBox(height: 20),
                 Text(
-                  'Chào mừng trở lại StoryVerse!',
+                  'Welcome back to ComicsVerse!',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
@@ -107,10 +102,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hintText: 'Email',
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null ||
-                        value.isEmpty ||
-                        !value.contains('@')) {
-                      return 'Vui lòng nhập email hợp lệ';
+                    if (value == null || value.isEmpty || !value.contains('@')) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -118,61 +111,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16),
                 AuthField(
                   controller: _passwordController,
-                  hintText: 'Mật khẩu',
+                  hintText: 'Password',
                   isPassword: true,
                   validator: (value) {
                     if (value == null || value.isEmpty || value.length < 6) {
-                      return 'Mật khẩu phải có ít nhất 6 ký tự';
+                      return 'Password must be at least 6 characters';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  // Vô hiệu hóa nút nếu một trong hai hành động đang chạy
                   onPressed: (_isLoading || _isGoogleLoading) ? null : _signIn,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                  ),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Đăng nhập'),
+                      : const Text('Sign In'),
                 ),
                 const SizedBox(height: 24),
-                const Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('HOẶC'),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
+                const Row(children: [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text('OR'),
+                  ),
+                  Expanded(child: Divider()),
+                ]),
                 const SizedBox(height: 24),
-                // Nút đăng nhập bằng Google
                 OutlinedButton.icon(
                   icon: _isGoogleLoading
-                      ? const SizedBox.shrink() // Ẩn icon khi đang tải
-                      : Image.asset(
-                          'assets/images/google_logo.png',
-                          height: 22,
-                        ), // TODO: Thêm logo Google vào assets
+                      ? const SizedBox.shrink()
+                      : Image.asset('assets/images/google_logo.png', height: 22),
                   label: _isGoogleLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Tiếp tục với Google'),
-                  // Vô hiệu hóa nút nếu một trong hai hành động đang chạy
-                  onPressed: (_isLoading || _isGoogleLoading)
-                      ? null
-                      : _signInWithGoogle,
+                      : const Text('Continue with Google'),
+                  onPressed: (_isLoading || _isGoogleLoading) ? null : _signInWithGoogle,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
                     foregroundColor: Theme.of(context).colorScheme.onBackground,
@@ -182,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.go('/signup'),
-                  child: const Text('Chưa có tài khoản? Đăng ký ngay'),
+                  child: const Text("Don't have an account? Sign up"),
                 ),
               ],
             ),

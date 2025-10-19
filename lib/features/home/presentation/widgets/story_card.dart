@@ -6,26 +6,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 
-/// Chuyển giá trị ảnh thành URL có thể dùng:
-/// - Nếu đã là URL (http/https) → trả nguyên vẹn
-/// - Nếu là path trong bucket 'stories' → tạo public URL
-/// - Nếu null/empty → trả null
 String? resolveImageUrl(String? value) {
   if (value == null || value.isEmpty) return null;
   if (value.startsWith('http')) return value;
   return Supabase.instance.client.storage.from('stories').getPublicUrl(value);
 }
 
-Color _baseShimmer(BuildContext ctx) =>
-    Theme.of(ctx).brightness == Brightness.dark
-        ? Colors.grey.shade800
-        : Colors.grey.shade300;
+// Helper functions for shimmer colors based on theme.
+Color _baseShimmer(BuildContext ctx) => Theme.of(ctx).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade300;
+Color _highlightShimmer(BuildContext ctx) => Theme.of(ctx).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade100;
 
-Color _highlightShimmer(BuildContext ctx) =>
-    Theme.of(ctx).brightness == Brightness.dark
-        ? Colors.grey.shade700
-        : Colors.grey.shade100;
-
+/// A card for displaying a story in a grid.
 class StoryCard extends StatelessWidget {
   final Story story;
   const StoryCard({super.key, required this.story});
@@ -35,28 +26,24 @@ class StoryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final imageUrl = resolveImageUrl(story.coverImageUrl);
 
-    // THÊM MỚI: Bọc Card bằng InkWell để xử lý sự kiện nhấn
     return InkWell(
       onTap: () {
-        // Điều hướng đến trang chi tiết truyện, truyền storyId qua path và story object qua extra
-        // Việc truyền 'extra' rất quan trọng để Hero Animation hoạt động
+        // Navigate to the story details screen, passing the story object for Hero animation.
         context.push('/story/${story.storyId}', extra: story);
       },
-      borderRadius: BorderRadius.circular(24), // Bo góc cho hiệu ứng ripple
+      borderRadius: BorderRadius.circular(24),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         clipBehavior: Clip.antiAlias,
         elevation: 0,
-        // Token mới trong M3 thay cho surfaceVariant (đã deprecated ở một số theme)
         color: theme.colorScheme.surfaceContainerHigh.withOpacity(0.5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Ảnh chiếm ~60% chiều cao ô grid → ổn định, không overflow
             Flexible(
               flex: 6,
               fit: FlexFit.tight,
-              child: Hero( 
+              child: Hero(
                 tag: 'story-cover-${story.storyId}',
                 child: imageUrl == null
                     ? Container(
@@ -78,9 +65,8 @@ class StoryCard extends StatelessWidget {
                           child: const Icon(Icons.broken_image_outlined),
                         ),
                       ),
-              )
+              ),
             ),
-            // Text chiếm ~40% còn lại
             Flexible(
               flex: 4,
               fit: FlexFit.tight,
@@ -90,14 +76,11 @@ class StoryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Bọc trong Flexible để hạn chế chiều cao text khi font lớn
                     Flexible(
                       child: Text(
                         story.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        // Nếu có font BebasNeue thì mở comment
-                        // style: theme.textTheme.headlineMedium?.copyWith(fontFamily: 'BebasNeue', letterSpacing: 1.1),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: theme.colorScheme.onSurface,
@@ -106,7 +89,7 @@ class StoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Chương 12', // TODO: bind chương mới nhất
+                      'Chapter 12', // TODO: Bind to latest chapter.
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -119,14 +102,12 @@ class StoryCard extends StatelessWidget {
             ),
           ],
         ),
-      )
+      ),
     );
   }
 }
 
-/// ------------------------------
-/// Card dùng trong Carousel "Bảng Xếp Hạng"
-/// ------------------------------
+/// A card for displaying a story in the "Rankings" carousel.
 class RankingStoryCard extends StatelessWidget {
   final Story story;
   final int rank;
@@ -139,7 +120,6 @@ class RankingStoryCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        // Tương tự như StoryCard, điều hướng đến trang chi tiết
         context.push('/story/${story.storyId}', extra: story);
       },
       borderRadius: BorderRadius.circular(24),
@@ -162,45 +142,36 @@ class RankingStoryCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Hero (
+              Hero(
                 tag: 'story-cover-${story.storyId}',
                 child: imageUrl == null
-                ? Container(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.image_outlined),
-                )
-              :
-                CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: _baseShimmer(context),
-                    highlightColor: _highlightShimmer(context),
-                    child: Container(color: Colors.white),
-                  ),
-                  errorWidget: (context, url, error) => const Center(
-                    child: Icon(Icons.image_not_supported_rounded),
-                  ),
-                ),
+                    ? Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.image_outlined),
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: _baseShimmer(context),
+                          highlightColor: _highlightShimmer(context),
+                          child: Container(color: Colors.white),
+                        ),
+                        errorWidget: (context, url, error) => const Center(
+                          child: Icon(Icons.image_not_supported_rounded),
+                        ),
+                      ),
               ),
-              
-
-              // Gradient giúp chữ nổi bật
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.85),
-                    ],
+                    colors: [Colors.black.withOpacity(0.0), Colors.black.withOpacity(0.85)],
                     begin: Alignment.center,
                     end: Alignment.bottomCenter,
                   ),
                 ),
               ),
-
-              // Huy hiệu TOP
               Positioned(
                 top: 12,
                 left: 12,
@@ -213,8 +184,6 @@ class RankingStoryCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // Tiêu đề
               Positioned(
                 bottom: 12,
                 left: 16,
@@ -223,26 +192,17 @@ class RankingStoryCard extends StatelessWidget {
                   story.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  // Nếu có font BebasNeue thì mở comment
-                  // style: theme.textTheme.headlineMedium?.copyWith(
-                  //   fontFamily: 'BebasNeue',
-                  //   color: Colors.white,
-                  //   letterSpacing: 1.1,
-                  //   shadows: [Shadow(blurRadius: 4, color: Colors.black54, offset: Offset(0, 2))],
-                  // ),
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: Colors.white,
                     letterSpacing: 1.1,
-                    shadows: const [
-                      Shadow(blurRadius: 4, color: Colors.black54, offset: Offset(0, 2)),
-                    ],
+                    shadows: const [Shadow(blurRadius: 4, color: Colors.black54, offset: Offset(0, 2))],
                   ),
                 ),
               ),
             ],
           ),
         ),
-      )
+      ),
     );
   }
 }

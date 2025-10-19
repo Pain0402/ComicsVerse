@@ -4,7 +4,6 @@ import 'package:comicsapp/features/home/domain/entities/story.dart';
 import 'package:comicsapp/features/home/presentation/widgets/story_card.dart';
 
 class ForYouGridSection extends StatelessWidget {
-  // Nhận trực tiếp List<Story> thay vì AsyncValue
   final List<Story> stories;
 
   const ForYouGridSection({super.key, required this.stories});
@@ -21,7 +20,7 @@ class ForYouGridSection extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Text(
-                "Dành Cho Bạn",
+                "For You",
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onBackground,
@@ -31,7 +30,7 @@ class ForYouGridSection extends StatelessWidget {
           ),
           if (stories.isEmpty)
             const SliverFillRemaining(
-              child: Center(child: Text("Không tìm thấy truyện nào.")),
+              child: Center(child: Text("No stories found.")),
             )
           else
             SliverGrid(
@@ -40,7 +39,6 @@ class ForYouGridSection extends StatelessWidget {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 childAspectRatio: 2 / 3.2,
-
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -57,4 +55,3 @@ class ForYouGridSection extends StatelessWidget {
     );
   }
 }
-

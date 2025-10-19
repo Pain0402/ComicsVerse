@@ -17,7 +17,7 @@ class RankingCarouselSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
-              "Bảng Xếp Hạng Tuần",
+              "Weekly Rankings",
               style: theme.textTheme.headlineLarge,
             ),
           ),
@@ -29,8 +29,7 @@ class RankingCarouselSection extends StatelessWidget {
             },
             options: CarouselOptions(
               height: 300,
-              // Tăng viewportFraction để card lớn hơn
-              viewportFraction: 0.7, 
+              viewportFraction: 0.7, // Make the central card larger.
               enlargeCenterPage: true,
               autoPlay: true,
               autoPlayInterval: const Duration(seconds: 5),
@@ -41,4 +40,3 @@ class RankingCarouselSection extends StatelessWidget {
     );
   }
 }
-

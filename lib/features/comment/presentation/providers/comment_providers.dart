@@ -4,24 +4,20 @@ import 'package:comicsapp/features/comment/domain/entities/comment_entity.dart';
 import 'package:comicsapp/features/comment/domain/repositories/comment_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Provider cung cấp instance của CommentRepository.
+/// Provides an instance of [CommentRepository].
 final commentRepositoryProvider = Provider<CommentRepository>((ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
   return CommentRepositoryImpl(supabaseClient);
 });
 
-/// StreamProvider lắng nghe danh sách bình luận (dạng phẳng) của một chương.
-/// Sử dụng `.family` để có thể truyền `chapterId` vào.
-final commentsStreamProvider =
-    StreamProvider.autoDispose.family<List<CommentEntity>, String>((ref, chapterId) {
+/// A stream provider that watches the flat list of comments for a chapter.
+final commentsStreamProvider = StreamProvider.autoDispose.family<List<CommentEntity>, String>((ref, chapterId) {
   final commentRepository = ref.watch(commentRepositoryProvider);
   return commentRepository.watchComments(chapterId);
 });
 
-/// Provider mới để xử lý danh sách bình luận phẳng thành dạng cây (có replies lồng nhau)
-final nestedCommentsProvider =
-    Provider.autoDispose.family<List<CommentEntity>, String>((ref, chapterId) {
-  // Lắng nghe danh sách bình luận phẳng từ stream
+/// A provider that transforms the flat list of comments into a nested (tree) structure.
+final nestedCommentsProvider = Provider.autoDispose.family<List<CommentEntity>, String>((ref, chapterId) {
   final commentsAsync = ref.watch(commentsStreamProvider(chapterId));
 
   return commentsAsync.when(
@@ -29,7 +25,7 @@ final nestedCommentsProvider =
       final repliesMap = <String, List<CommentEntity>>{};
       final topLevelComments = <CommentEntity>[];
 
-      // Phân loại comments và replies
+      // Group comments by their parent ID.
       for (final comment in flatList) {
         if (comment.parentId != null) {
           (repliesMap[comment.parentId!] ??= []).add(comment);
@@ -38,10 +34,9 @@ final nestedCommentsProvider =
         }
       }
 
-      // Tạo danh sách kết quả cuối cùng với các replies được gán đúng cách
+      // Assign replies to their parent comments.
       final result = topLevelComments.map((parentComment) {
         if (repliesMap.containsKey(parentComment.id)) {
-          // Tạo một bản sao của comment cha với danh sách replies mới
           return parentComment.copyWith(replies: repliesMap[parentComment.id]);
         }
         return parentComment;
@@ -49,16 +44,13 @@ final nestedCommentsProvider =
 
       return result;
     },
-    // Trả về danh sách rỗng cho các trạng thái khác
     loading: () => [],
     error: (e, st) => [],
   );
 });
 
-
-/// StateNotifierProvider quản lý trạng thái của việc gửi bình luận.
-final commentPostControllerProvider =
-    StateNotifierProvider.autoDispose<CommentPostController, AsyncValue<void>>((ref) {
+/// A [StateNotifierProvider] to manage the state of posting a comment.
+final commentPostControllerProvider = StateNotifierProvider.autoDispose<CommentPostController, AsyncValue<void>>((ref) {
   return CommentPostController(ref.watch(commentRepositoryProvider));
 });
 
@@ -67,7 +59,7 @@ class CommentPostController extends StateNotifier<AsyncValue<void>> {
 
   CommentPostController(this._commentRepository) : super(const AsyncData(null));
 
-  /// Hàm để gửi bình luận, quản lý trạng thái loading và error.
+  /// Posts a comment and manages the loading/error states.
   Future<void> postComment({
     required String content,
     required String chapterId,
@@ -86,4 +78,3 @@ class CommentPostController extends StateNotifier<AsyncValue<void>> {
     }
   }
 }
-

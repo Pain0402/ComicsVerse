@@ -13,7 +13,6 @@ class CommentRepositoryImpl implements CommentRepository {
     final controller = StreamController<List<CommentEntity>>();
     RealtimeChannel? channel;
 
-    // Hàm để fetch dữ liệu và đẩy vào stream
     Future<void> fetchAndEmitComments() async {
       try {
         final data = await _supabaseClient
@@ -21,7 +20,7 @@ class CommentRepositoryImpl implements CommentRepository {
             .select('*, profiles!inner(id, display_name, avatar_url, role)')
             .eq('chapter_id', chapterId)
             .order('created_at', ascending: true);
-        
+
         final comments = data.map((map) => CommentEntity.fromMap(map)).toList();
         if (!controller.isClosed) {
           controller.add(comments);
@@ -33,10 +32,10 @@ class CommentRepositoryImpl implements CommentRepository {
       }
     }
 
-    // 1. Fetch dữ liệu lần đầu tiên
+    // Initial fetch.
     fetchAndEmitComments();
 
-    // 2. Lắng nghe thay đổi trên Realtime Channel
+    // Listen for real-time changes.
     channel = _supabaseClient
         .channel('public:Comment:chapter_id=eq.$chapterId')
         .onPostgresChanges(
@@ -49,13 +48,13 @@ class CommentRepositoryImpl implements CommentRepository {
             value: chapterId,
           ),
           callback: (payload) {
-            // Khi có bất kỳ thay đổi nào, fetch lại toàn bộ danh sách
+            // Refetch the entire list on any change.
             fetchAndEmitComments();
           },
         )
         .subscribe();
 
-    // Khi stream bị hủy, đóng channel và controller
+    // Close channel and controller when the stream is cancelled.
     controller.onCancel = () {
       if (channel != null) {
         _supabaseClient.removeChannel(channel);
@@ -74,7 +73,7 @@ class CommentRepositoryImpl implements CommentRepository {
   }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) {
-      throw const AuthException('Người dùng chưa đăng nhập');
+      throw const AuthException('User not authenticated');
     }
 
     try {
@@ -85,9 +84,7 @@ class CommentRepositoryImpl implements CommentRepository {
         'parent_comment_id': parentCommentId,
       });
     } catch (e) {
-      // Ném lại lỗi để lớp presentation có thể xử lý
       rethrow;
     }
   }
 }
-

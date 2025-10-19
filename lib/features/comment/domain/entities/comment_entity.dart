@@ -1,13 +1,12 @@
 import 'package:comicsapp/features/auth/domain/entities/profile.dart';
 
-/// Đại diện cho một đối tượng bình luận trong ứng dụng.
 class CommentEntity {
   final String id;
   final String content;
   final DateTime createdAt;
-  final Profile author; // Thông tin người viết bình luận
+  final Profile author;
   final String? parentId;
-  final List<CommentEntity> replies; // Danh sách các bình luận con
+  final List<CommentEntity> replies;
 
   CommentEntity({
     required this.id,
@@ -15,24 +14,23 @@ class CommentEntity {
     required this.createdAt,
     required this.author,
     this.parentId,
-    List<CommentEntity>? replies, // Cho phép truyền vào hoặc không
-  }) : replies = replies ?? []; // Nếu null thì tạo list rỗng mới
+    List<CommentEntity>? replies,
+  }) : replies = replies ?? []; // Default to an empty list if null.
 
-  /// Factory constructor để tạo một CommentEntity từ dữ liệu JSON (map) trả về từ Supabase.
+  /// Creates a [CommentEntity] from a map (JSON data) from Supabase.
   factory CommentEntity.fromMap(Map<String, dynamic> map) {
     return CommentEntity(
       id: map['comment_id'] as String,
       content: map['content'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
-      // CẬP NHẬT: Sử dụng factory 'fromEmbeddedMap' mới
       author: map['profiles'] != null && map['profiles'] is Map<String, dynamic>
           ? Profile.fromEmbeddedMap(map['profiles'] as Map<String, dynamic>)
-          : Profile(id: map['user_id'], displayName: 'Người dùng ẩn danh'),
+          : Profile(id: map['user_id'], displayName: 'Anonymous User'),
       parentId: map['parent_comment_id'] as String?,
     );
   }
 
-  // Hàm tiện ích để tạo một bản sao của đối tượng với các replies mới
+  /// Creates a copy of this comment with new replies.
   CommentEntity copyWith({
     List<CommentEntity>? replies,
   }) {
@@ -46,4 +44,3 @@ class CommentEntity {
     );
   }
 }
-

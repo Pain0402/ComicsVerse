@@ -2,30 +2,22 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:comicsapp/features/comment/domain/entities/comment_entity.dart';
 import 'package:flutter/material.dart';
 
-// THÊM MỚI: Hàm tiện ích để định dạng thời gian tương đối
+/// A utility function to format a [DateTime] into a relative time string (e.g., "5 minutes ago").
 String timeAgo(DateTime date) {
   final duration = DateTime.now().difference(date);
-  if (duration.inDays > 365) {
-    return '${(duration.inDays / 365).floor()} năm trước';
-  } else if (duration.inDays > 30) {
-    return '${(duration.inDays / 30).floor()} tháng trước';
-  } else if (duration.inDays > 0) {
-    return '${duration.inDays} ngày trước';
-  } else if (duration.inHours > 0) {
-    return '${duration.inHours} giờ trước';
-  } else if (duration.inMinutes > 0) {
-    return '${duration.inMinutes} phút trước';
-  } else {
-    return 'Vừa xong';
-  }
+  if (duration.inDays > 365) return '${(duration.inDays / 365).floor()} years ago';
+  if (duration.inDays > 30) return '${(duration.inDays / 30).floor()} months ago';
+  if (duration.inDays > 0) return '${duration.inDays} days ago';
+  if (duration.inHours > 0) return '${duration.inHours} hours ago';
+  if (duration.inMinutes > 0) return '${duration.inMinutes} minutes ago';
+  return 'Just now';
 }
 
-
-/// Widget để hiển thị một mục bình luận.
+/// A widget to display a single comment item and its replies recursively.
 class CommentListItem extends StatelessWidget {
   final CommentEntity comment;
-  final Function(CommentEntity) onReply; // THÊM MỚI: Callback cho nút trả lời
-  final int depth; // THÊM MỚI: Để xác định độ sâu của bình luận
+  final Function(CommentEntity) onReply;
+  final int depth;
 
   const CommentListItem({
     super.key,
@@ -40,7 +32,6 @@ class CommentListItem extends StatelessWidget {
     final isReply = depth > 0;
 
     return Padding(
-      // Thụt vào cho các bình luận trả lời
       padding: EdgeInsets.only(left: isReply ? 36.0 : 0),
       child: Column(
         children: [
@@ -49,19 +40,14 @@ class CommentListItem extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar người dùng
                 CircleAvatar(
-                  radius: isReply ? 16 : 20, // Avatar nhỏ hơn cho trả lời
+                  radius: isReply ? 16 : 20,
                   backgroundColor: theme.colorScheme.surfaceVariant,
-                  backgroundImage: comment.author.avatarUrl != null
-                      ? CachedNetworkImageProvider(comment.author.avatarUrl!)
-                      : null,
-                  child: comment.author.avatarUrl == null
-                      ? Icon(Icons.person, size: isReply ? 16 : 20)
-                      : null,
+                  backgroundImage:
+                      comment.author.avatarUrl != null ? CachedNetworkImageProvider(comment.author.avatarUrl!) : null,
+                  child: comment.author.avatarUrl == null ? Icon(Icons.person, size: isReply ? 16 : 20) : null,
                 ),
                 const SizedBox(width: 12),
-                // Nội dung bình luận
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,36 +55,25 @@ class CommentListItem extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            comment.author.displayName ?? 'Người dùng',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            comment.author.displayName ?? 'User',
+                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            // SỬ DỤNG HÀM MỚI
                             '• ${timeAgo(comment.createdAt)}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        comment.content,
-                        style: theme.textTheme.bodyMedium,
-                      ),
+                      Text(comment.content, style: theme.textTheme.bodyMedium),
                       const SizedBox(height: 8),
-                      // CẬP NHẬT: Nút trả lời
                       GestureDetector(
                         onTap: () => onReply(comment),
                         child: Text(
-                          'Trả lời',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                          'Reply',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ),
                     ],
@@ -107,7 +82,7 @@ class CommentListItem extends StatelessWidget {
               ],
             ),
           ),
-          // THÊM MỚI: Hiển thị danh sách các bình luận trả lời
+          // Recursively build replies.
           if (comment.replies.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 16.0),
@@ -126,4 +101,3 @@ class CommentListItem extends StatelessWidget {
     );
   }
 }
-

@@ -2,7 +2,6 @@ import 'package:comicsapp/features/home/presentation/widgets/story_card.dart';
 import 'package:comicsapp/features/library/presentation/providers/library_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -16,7 +15,7 @@ class LibraryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Tủ Truyện',
+          'Library',
           style: theme.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -25,7 +24,7 @@ class LibraryScreen extends ConsumerWidget {
       body: bookmarkedStoriesAsync.when(
         loading: () => _buildLoadingSkeleton(context),
         error: (error, stackTrace) => Center(
-          child: Text('Lỗi tải tủ truyện: ${error.toString()}'),
+          child: Text('Error loading library: ${error.toString()}'),
         ),
         data: (stories) {
           if (stories.isEmpty) {
@@ -33,22 +32,13 @@ class LibraryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.bookmark_remove_outlined,
-                    size: 80,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                  Icon(Icons.bookmark_remove_outlined, size: 80, color: theme.colorScheme.onSurfaceVariant),
                   const SizedBox(height: 16),
-                  Text(
-                    'Tủ truyện của bạn đang trống',
-                    style: theme.textTheme.headlineSmall,
-                  ),
+                  Text('Your library is empty', style: theme.textTheme.headlineSmall),
                   const SizedBox(height: 8),
                   Text(
-                    'Thêm truyện bạn yêu thích vào đây nhé!',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    'Add your favorite stories here!',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),

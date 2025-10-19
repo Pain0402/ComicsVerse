@@ -4,19 +4,19 @@ import 'package:comicsapp/features/library/data/repositories/library_repository_
 import 'package:comicsapp/features/library/domain/repositories/library_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Provider cung cấp instance của LibraryRepository
+/// Provides an instance of [LibraryRepository].
 final libraryRepositoryProvider = Provider<LibraryRepository>((ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
   return LibraryRepositoryImpl(supabaseClient);
 });
 
-/// Provider để lấy danh sách các truyện đã bookmark
+/// Fetches the list of bookmarked stories.
 final bookmarkedStoriesProvider = FutureProvider<List<Story>>((ref) async {
   final libraryRepository = ref.watch(libraryRepositoryProvider);
   return libraryRepository.getBookmarkedStories();
 });
 
-/// StateNotifier để quản lý trạng thái bookmark của một truyện cụ thể (đã thêm/chưa thêm)
+/// A [StateNotifierProvider] to manage the bookmark status of a specific story.
 final isBookmarkedProvider = StateNotifierProvider.family<IsBookmarkedNotifier, AsyncValue<bool>, String>((ref, storyId) {
   final libraryRepository = ref.watch(libraryRepositoryProvider);
   return IsBookmarkedNotifier(libraryRepository, storyId);
@@ -39,11 +39,12 @@ class IsBookmarkedNotifier extends StateNotifier<AsyncValue<bool>> {
     }
   }
 
+  /// Toggles the bookmark status of the story.
   Future<void> toggleBookmark() async {
-    // Cập nhật UI ngay lập tức để tạo cảm giác phản hồi nhanh
     final previousState = state.value;
     if (previousState == null) return;
 
+    // Optimistically update the UI for a faster user experience.
     state = AsyncValue.data(!previousState);
 
     try {
@@ -52,11 +53,9 @@ class IsBookmarkedNotifier extends StateNotifier<AsyncValue<bool>> {
       } else {
         await _libraryRepository.removeStoryFromBookmarks(_storyId);
       }
-      // Sau khi API thành công, không cần làm gì thêm vì UI đã được cập nhật
     } catch (e, st) {
-      // Nếu có lỗi, quay lại trạng thái cũ và báo lỗi
+      // If an error occurs, revert to the previous state.
       state = AsyncValue.data(previousState);
-      // Có thể hiển thị SnackBar hoặc thông báo lỗi ở đây
       print('Error toggling bookmark: $e');
     }
   }

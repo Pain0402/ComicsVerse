@@ -1,15 +1,15 @@
 import 'package:comicsapp/features/home/domain/entities/story.dart';
 
 abstract class LibraryRepository {
-  /// Lấy danh sách tất cả các truyện đã được bookmark bởi người dùng hiện tại
+  /// Fetches a list of all stories bookmarked by the current user.
   Future<List<Story>> getBookmarkedStories();
 
-  /// Kiểm tra xem một truyện cụ thể đã được bookmark hay chưa
+  /// Checks if a specific story is bookmarked by the current user.
   Future<bool> isStoryBookmarked(String storyId);
 
-  /// Thêm một truyện vào bookmark
+  /// Adds a story to the current user's bookmarks.
   Future<void> addStoryToBookmarks(String storyId);
 
-  /// Xóa một truyện khỏi bookmark
+  /// Removes a story from the current user's bookmarks.
   Future<void> removeStoryFromBookmarks(String storyId);
 }

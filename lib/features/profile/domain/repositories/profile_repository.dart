@@ -2,16 +2,16 @@ import 'dart:io';
 import 'package:comicsapp/features/auth/domain/entities/profile.dart';
 
 abstract class ProfileRepository {
-  /// Lấy thông tin hồ sơ của người dùng hiện tại
+  /// Fetches the profile information of the current user.
   Future<Profile?> getUserProfile();
 
-  /// Cập nhật thông tin hồ sơ
+  /// Updates the user's profile information.
   Future<void> updateUserProfile({
     required String userId,
     required String displayName,
     File? avatarFile,
   });
 
-  /// Đăng xuất
+  /// Signs out the current user.
   Future<void> signOut();
 }

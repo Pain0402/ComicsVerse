@@ -5,25 +5,21 @@ import 'package:comicsapp/features/profile/data/repositories/profile_repository_
 import 'package:comicsapp/features/profile/domain/repositories/profile_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// 1. Provider cung cấp ProfileRepository
+/// Provides the [ProfileRepository] implementation.
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
   return ProfileRepositoryImpl(supabaseClient);
 });
 
-// 2. FutureProvider để lấy dữ liệu hồ sơ ban đầu
+/// A stream provider that fetches and provides the current user's profile.
 final userProfileProvider = StreamProvider.autoDispose<Profile?>((ref) async* {
   final profileRepository = ref.watch(profileRepositoryProvider);
-  // Ban đầu, tải dữ liệu người dùng
   yield await profileRepository.getUserProfile();
-
-  // Trong tương lai, có thể lắng nghe các stream thay đổi ở đây
-  // Ví dụ: ref.watch(notificationStreamProvider).
+  // In the future, this could watch other streams for real-time updates.
 });
 
-// 3. StateNotifierProvider để quản lý trạng thái cập nhật hồ sơ
-final profileUpdaterProvider =
-    StateNotifierProvider<ProfileUpdaterNotifier, AsyncValue<void>>((ref) {
+/// A [StateNotifierProvider] to manage the state of profile update operations.
+final profileUpdaterProvider = StateNotifierProvider<ProfileUpdaterNotifier, AsyncValue<void>>((ref) {
   return ProfileUpdaterNotifier(ref);
 });
 
@@ -41,14 +37,14 @@ class ProfileUpdaterNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncError('User not logged in', StackTrace.current);
       return;
     }
-    
+
     try {
       await _ref.read(profileRepositoryProvider).updateUserProfile(
             userId: user.id,
             displayName: displayName,
             avatarFile: avatarFile,
           );
-      // Cập nhật thành công, làm mới lại provider userProfile
+      // Invalidate the profile provider to refetch the updated data.
       _ref.invalidate(userProfileProvider);
       state = const AsyncData(null);
     } catch (e, st) {

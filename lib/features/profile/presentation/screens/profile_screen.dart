@@ -15,7 +15,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hồ Sơ'),
+        title: const Text('Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -26,7 +26,7 @@ class ProfileScreen extends ConsumerWidget {
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
-            return const Center(child: Text('Không tìm thấy thông tin người dùng.'));
+            return const Center(child: Text('User information not found.'));
           }
           return ListView(
             padding: const EdgeInsets.all(16.0),
@@ -37,16 +37,14 @@ class ProfileScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: colorScheme.surfaceVariant,
-                      backgroundImage: profile.avatarUrl != null
-                          ? NetworkImage(profile.avatarUrl!)
-                          : null,
+                      backgroundImage: profile.avatarUrl != null ? NetworkImage(profile.avatarUrl!) : null,
                       child: profile.avatarUrl == null
                           ? Icon(Icons.person, size: 50, color: colorScheme.onSurfaceVariant)
                           : null,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      profile.displayName ?? 'Chưa có tên',
+                      profile.displayName ?? 'No Name',
                       style: theme.textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 8),
@@ -57,25 +55,20 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-               const SizedBox(height: 32),
-
-              // --- THÊM MỚI: Phần thống kê ---
+              const SizedBox(height: 32),
               _buildStatsSection(context, profile: profile),
-
               const SizedBox(height: 16),
               const Divider(),
-              
-              // --- Phần Cài đặt và Đăng xuất ---
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
-                title: const Text('Cài đặt'),
-                onTap: () { 
-                  // TODO: Điều hướng đến trang cài đặt
+                title: const Text('Settings'),
+                onTap: () {
+                  // TODO: Navigate to settings screen
                 },
               ),
               ListTile(
                 leading: Icon(Icons.logout, color: colorScheme.error),
-                title: Text('Đăng xuất', style: TextStyle(color: colorScheme.error)),
+                title: Text('Sign Out', style: TextStyle(color: colorScheme.error)),
                 onTap: () async {
                   await ref.read(profileRepositoryProvider).signOut();
                 },
@@ -84,24 +77,24 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Lỗi tải hồ sơ: $err')),
+        error: (err, stack) => Center(child: Text('Error loading profile: $err')),
       ),
     );
   }
 
-  // THÊM MỚI: Widget xây dựng khu vực thống kê
+  /// Builds the user statistics section (Bookmarks, Comments, Reviews).
   Widget _buildStatsSection(BuildContext context, {required dynamic profile}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem(context, count: profile.bookmarkedStoriesCount, label: 'Theo dõi'),
-        _buildStatItem(context, count: profile.commentsCount, label: 'Bình luận'),
-        _buildStatItem(context, count: profile.reviewsCount, label: 'Đánh giá'),
+        _buildStatItem(context, count: profile.bookmarkedStoriesCount, label: 'Following'),
+        _buildStatItem(context, count: profile.commentsCount, label: 'Comments'),
+        _buildStatItem(context, count: profile.reviewsCount, label: 'Reviews'),
       ],
     );
   }
-  
-  // THÊM MỚI: Widget cho một mục thống kê
+
+  /// Builds a single item for the statistics section.
   Widget _buildStatItem(BuildContext context, {required int count, required String label}) {
     final theme = Theme.of(context);
     return Column(
@@ -119,4 +112,3 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
-

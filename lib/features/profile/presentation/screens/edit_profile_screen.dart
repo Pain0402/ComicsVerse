@@ -46,12 +46,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             displayName: _nameController.text.trim(),
             avatarFile: _avatarFile,
           );
-      
-      // Kiểm tra xem có lỗi xảy ra không trước khi pop
+
       if (mounted && ref.read(profileUpdaterProvider).hasError == false) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cập nhật hồ sơ thành công!')),
+          const SnackBar(content: Text('Profile updated successfully!')),
         );
       }
     }
@@ -62,12 +61,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final initialProfile = ref.watch(userProfileProvider).value;
-    
-    // Lắng nghe trạng thái cập nhật để hiển thị lỗi
+
     ref.listen<AsyncValue<void>>(profileUpdaterProvider, (_, state) {
       if (state is AsyncError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${state.error}')),
+          SnackBar(content: Text('Error: ${state.error}')),
         );
       }
     });
@@ -76,7 +74,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chỉnh sửa Hồ sơ'),
+        title: const Text('Edit Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -97,9 +95,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     backgroundColor: colorScheme.surfaceVariant,
                     backgroundImage: _avatarFile != null
                         ? FileImage(_avatarFile!)
-                        : (initialProfile?.avatarUrl != null
-                            ? NetworkImage(initialProfile!.avatarUrl!)
-                            : null) as ImageProvider?,
+                        : (initialProfile?.avatarUrl != null ? NetworkImage(initialProfile!.avatarUrl!) : null)
+                            as ImageProvider?,
                     child: _avatarFile == null && initialProfile?.avatarUrl == null
                         ? Icon(Icons.person, size: 60, color: colorScheme.onSurfaceVariant)
                         : null,
@@ -117,10 +114,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Tên hiển thị'),
+                decoration: const InputDecoration(labelText: 'Display Name'),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Tên hiển thị không được để trống';
+                    return 'Display name cannot be empty';
                   }
                   return null;
                 },

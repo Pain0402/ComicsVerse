@@ -14,11 +14,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final user = _supabaseClient.auth.currentUser;
       if (user == null) return null;
 
-      final data = await _supabaseClient.rpc(
-        'get_user_profile_details',
-        params: {'p_user_id': user.id},
-      ).single();
-      
+      // Use an RPC to get combined profile and stats data.
+      final data = await _supabaseClient
+          .rpc('get_user_profile_details', params: {'p_user_id': user.id})
+          .single();
+
       return Profile.fromMap(data);
     } catch (e) {
       print('Error fetching profile details: $e');
@@ -36,21 +36,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
       String? avatarUrl;
       if (avatarFile != null) {
         final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        // SỬA ĐỔI: Thêm đường dẫn 'avatars' vào đầu
         final filePath = 'avatars/$userId/$fileName';
 
-        // SỬA ĐỔI: Đảm bảo bucket là 'profiles' nếu bạn đã tạo bucket đó, hoặc 'public' nếu bucket là public.
-        // Lỗi "Bucket not found" cho thấy tên bucket đang sai.
-        // Giả sử bạn đã tạo bucket tên 'public' theo hướng dẫn.
+        // Upload to the 'public_avatar' bucket.
         await _supabaseClient.storage.from('public_avatar').upload(
               filePath,
               avatarFile,
               fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
             );
-        
+
         avatarUrl = _supabaseClient.storage.from('public_avatar').getPublicUrl(filePath);
       }
-      
+
       final updates = <String, dynamic>{
         'display_name': displayName,
       };
@@ -58,18 +55,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (avatarUrl != null) {
         updates['avatar_url'] = avatarUrl;
       }
-      
-      await _supabaseClient.from('profiles').update(updates).eq('id', userId);
 
+      await _supabaseClient.from('profiles').update(updates).eq('id', userId);
     } catch (e) {
       print('Error updating profile: $e');
       rethrow;
     }
   }
-  
+
   @override
   Future<void> signOut() async {
     await _supabaseClient.auth.signOut();
   }
 }
-

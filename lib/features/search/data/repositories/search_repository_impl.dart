@@ -10,21 +10,17 @@ class SearchRepositoryImpl implements SearchRepository {
   @override
   Future<List<Story>> searchStories(String query) async {
     try {
-      // Sử dụng .ilike() để tìm kiếm không phân biệt chữ hoa/thường.
-      // '%$query%' có nghĩa là tìm bất kỳ truyện nào có tiêu đề chứa chuỗi query.
+      // Use .ilike() for case-insensitive search.
+      // '%$query%' finds any story whose title contains the query string.
       final response = await supabaseClient
           .from('Story')
-          .select('*, profiles:author_id(*)') // Dựa theo cấu trúc CSDL của bạn
+          .select('*, profiles:author_id(*)') // Adjust based on your DB schema
           .ilike('title', '%$query%');
 
-      // Chuyển đổi kết quả JSON thành danh sách các đối tượng Story.
-      final stories = (response as List)
-          .map((item) => Story.fromMap(item))
-          .toList();
+      final stories = (response as List).map((item) => Story.fromMap(item)).toList();
       return stories;
     } catch (e) {
-      // Xử lý lỗi nếu có
-      throw Exception('Lỗi khi tìm kiếm truyện: $e');
+      throw Exception('Error searching stories: $e');
     }
   }
 }

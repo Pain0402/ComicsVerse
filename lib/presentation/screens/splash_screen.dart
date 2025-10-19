@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Một màn hình đơn giản hiển thị một vòng xoay tải ở giữa.
-/// Màn hình này sẽ được hiển thị trong khi ứng dụng đang xác định
-/// trạng thái đăng nhập của người dùng khi khởi động.
+/// A simple screen that displays a loading indicator.
+/// Shown while the app determines the user's authentication state on startup.
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 

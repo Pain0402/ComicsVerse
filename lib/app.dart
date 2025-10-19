@@ -3,28 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/config/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
-// Widget gốc của ứng dụng
+// The root widget of the application.
 class App extends ConsumerWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Đọc router từ goRouterProvider
+    // Watch the GoRouter provider to integrate routing.
     final router = ref.watch(goRouterProvider);
 
-    // MaterialApp.router cho phép tích hợp với GoRouter
+    // Use MaterialApp.router to configure the app with GoRouter.
     return MaterialApp.router(
-      title: 'StoryVerse',
+      title: 'ComicsVerse',
       debugShowCheckedModeBanner: false,
 
-      // Cấu hình theme sáng
+      // Theme configuration.
       theme: AppTheme.lightTheme,
-      // Cấu hình theme tối
       darkTheme: AppTheme.darkTheme,
-      // Tự động chọn theme dựa trên cài đặt hệ thống
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.system, // Automatically select theme based on system settings.
 
-      // Cấu hình router
+      // Router configuration.
       routerConfig: router,
     );
   }

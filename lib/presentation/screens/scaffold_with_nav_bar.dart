@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+/// A scaffold that includes a bottom navigation bar for switching between different sections of the app.
 class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
     required this.navigationShell,
@@ -16,11 +17,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      // Mở rộng body ra sau cả bottom navigation bar
-      extendBody: true, 
+      extendBody: true, // Allows the body to extend behind the navigation bar for the blur effect.
       body: navigationShell,
       bottomNavigationBar: Container(
-        // Đặt màu nền trong suốt để hiệu ứng mờ có thể nhìn xuyên qua
         color: Colors.transparent,
         child: ClipRRect(
           child: BackdropFilter(
@@ -42,17 +41,17 @@ class ScaffoldWithNavBar extends StatelessWidget {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home_rounded),
-                  label: 'Trang chủ',
+                  label: 'Home',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.book_outlined),
                   activeIcon: Icon(Icons.book_rounded),
-                  label: 'Tủ truyện',
+                  label: 'Library',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person_rounded),
-                  label: 'Hồ sơ',
+                  label: 'Profile',
                 ),
               ],
             ),
@@ -62,4 +61,3 @@ class ScaffoldWithNavBar extends StatelessWidget {
     );
   }
 }
-

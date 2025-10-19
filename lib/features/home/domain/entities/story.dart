@@ -27,14 +27,13 @@ class Story {
     required this.updatedAt,
   });
 
-  // Factory constructor được làm mạnh mẽ hơn để xử lý các giá trị null và kiểu dữ liệu
+  /// A robust factory for creating a [Story] instance from a map.
+  /// Handles null values and type conversions gracefully.
   factory Story.fromMap(Map<String, dynamic> map) {
-    // SỬA ĐỔI: Chuyển đổi linh hoạt từ bất kỳ kiểu số nào (int, double)
     final num totalReadsNum = map['total_reads'] ?? 0;
-    
+
     return Story(
       storyId: map['story_id'] ?? '',
-      // Xử lý trường hợp 'profiles' có thể là null hoặc không phải là Map
       author: map['profiles'] is Map<String, dynamic>
           ? Profile.fromMap(map['profiles'] as Map<String, dynamic>)
           : Profile(id: map['author_id'] ?? '', displayName: 'Unknown Author'),
@@ -43,16 +42,10 @@ class Story {
       coverImageUrl: map['cover_image_url'],
       status: map['status'] ?? 'draft',
       isVipOnly: map['is_vip_only'] ?? false,
-      // Luôn chuyển đổi sang double một cách an toàn
       averageRating: (map['average_rating'] as num?)?.toDouble() ?? 0.0,
-      // SỬA ĐỔI: Sử dụng .toInt() để chuyển đổi an toàn từ num (int hoặc double)
       totalReads: totalReadsNum.toInt(),
-      createdAt: map['created_at'] != null
-          ? DateTime.parse(map['created_at'])
-          : DateTime.now(),
-      updatedAt: map['updated_at'] != null
-          ? DateTime.parse(map['updated_at'])
-          : DateTime.now(),
+      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : DateTime.now(),
+      updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : DateTime.now(),
     );
   }
 }

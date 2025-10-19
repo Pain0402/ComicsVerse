@@ -22,9 +22,7 @@ class Chapter {
       chapterNumber: map['chapter_number'] as int? ?? 0,
       title: map['title'] ?? 'No Title',
       isVip: map['is_vip'] ?? false,
-      releaseDate: map['release_date'] != null
-          ? DateTime.parse(map['release_date'])
-          : DateTime.now(),
+      releaseDate: map['release_date'] != null ? DateTime.parse(map['release_date']) : DateTime.now(),
     );
   }
 }

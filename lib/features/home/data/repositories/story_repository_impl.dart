@@ -1,28 +1,25 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:comicsapp/features/home/domain/entities/story.dart';
-import 'package:comicsapp/features/auth/domain/entities/profile.dart'; // Giả sử đã có file này
+import 'package:comicsapp/features/auth/domain/entities/profile.dart';
 import 'package:comicsapp/features/home/domain/entities/story_details.dart';
 
 class StoryRepository {
   final SupabaseClient _client;
   StoryRepository(this._client);
 
-  // Lấy tất cả truyện, sắp xếp theo ngày cập nhật mới nhất
+  /// Fetches all stories, ordered by the most recently updated.
   Future<List<Story>> getAllStories() async {
     try {
-      final data = await _client
-          .from('Story')
-          .select()
-          .order('updated_at', ascending: false);
+      final data = await _client.from('Story').select().order('updated_at', ascending: false);
       return data.map((item) => Story.fromMap(item)).toList();
     } catch (e) {
-      // Trong ứng dụng thực tế, nên dùng một hệ thống logging tốt hơn
+      // In a real application, use a proper logging system.
       print('Error fetching stories: $e');
       rethrow;
     }
   }
 
-  // Hàm lấy chi tiết truyện bằng RPC
+  /// Fetches detailed information for a single story using an RPC.
   Future<StoryDetails> getStoryDetails(String storyId) async {
     try {
       final response = await _client.rpc(
@@ -36,20 +33,17 @@ class StoryRepository {
     }
   }
 
-  // Lấy thông tin profile của người dùng hiện tại
+  /// Fetches the profile of the current user.
   Future<Profile?> getUserProfile() async {
     try {
       final user = _client.auth.currentUser;
       if (user == null) return null;
 
-      final data =
-          await _client.from('profiles').select().eq('id', user.id).single();
+      final data = await _client.from('profiles').select().eq('id', user.id).single();
       return Profile.fromMap(data);
     } catch (e) {
       print('Error fetching profile: $e');
-      // Trả về null nếu không tìm thấy hoặc có lỗi
       return null;
     }
   }
 }
-

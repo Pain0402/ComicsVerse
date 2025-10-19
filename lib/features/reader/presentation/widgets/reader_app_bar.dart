@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Thanh AppBar cho màn hình đọc truyện với hiệu ứng Glassmorphism.
+/// A glassmorphism-style AppBar for the reader screen.
 class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String storyTitle;
   final String chapterTitle;
@@ -32,18 +32,8 @@ class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                storyTitle,
-                style: theme.textTheme.titleMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                chapterTitle,
-                style: theme.textTheme.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(storyTitle, style: theme.textTheme.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(chapterTitle, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
           actions: [

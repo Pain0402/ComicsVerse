@@ -3,28 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
-// Sử dụng StateProvider để quản lý giá trị độ sáng hiện tại của slider
+/// StateProvider to manage the current brightness value of the slider.
 final brightnessProvider = StateProvider.autoDispose<double>((ref) => 0.5);
 
-/// BottomSheet hiển thị cài đặt cho trình đọc.
+/// A bottom sheet for displaying reader settings, like screen brightness.
 class ReaderSettingsBottomSheet extends ConsumerWidget {
   const ReaderSettingsBottomSheet({super.key});
 
-  // Hàm để lấy độ sáng hiện tại của hệ thống một cách bất đồng bộ
+  /// Asynchronously gets the current system brightness and updates the provider.
   Future<void> _getCurrentBrightness(WidgetRef ref) async {
     try {
       final double brightness = await ScreenBrightness().current;
-      // Cập nhật StateProvider với giá trị độ sáng thực tế
       ref.read(brightnessProvider.notifier).state = brightness;
     } catch (e) {
-      print("Không thể lấy độ sáng màn hình: $e");
+      print("Failed to get screen brightness: $e");
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Gọi hàm để lấy độ sáng hiện tại khi widget được build lần đầu
-    // Sử dụng FutureBuilder để tránh gọi lại nhiều lần không cần thiết
+    // Use a FutureBuilder to fetch the initial brightness only once.
     return FutureBuilder(
       future: _getCurrentBrightness(ref),
       builder: (context, snapshot) {
@@ -41,7 +39,6 @@ class ReaderSettingsBottomSheet extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Drag handle
                   Container(
                     width: 40,
                     height: 5,
@@ -51,10 +48,8 @@ class ReaderSettingsBottomSheet extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Cài đặt hiển thị', style: theme.textTheme.headlineSmall),
+                  Text('Display Settings', style: theme.textTheme.headlineSmall),
                   const SizedBox(height: 16),
-
-                  // Thanh trượt điều chỉnh độ sáng
                   Row(
                     children: [
                       const Icon(Icons.brightness_low_rounded),
@@ -62,9 +57,7 @@ class ReaderSettingsBottomSheet extends ConsumerWidget {
                         child: Slider(
                           value: brightnessValue,
                           onChanged: (value) {
-                            // Cập nhật UI ngay lập tức
                             ref.read(brightnessProvider.notifier).state = value;
-                            // Gọi API để thay đổi độ sáng hệ thống
                             ScreenBrightness().setScreenBrightness(value);
                           },
                         ),

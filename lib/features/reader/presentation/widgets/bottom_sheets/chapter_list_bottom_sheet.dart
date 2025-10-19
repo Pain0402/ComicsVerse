@@ -3,7 +3,7 @@ import 'package:comicsapp/features/home/domain/entities/chapter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// BottomSheet hiển thị danh sách tất cả các chương của một truyện.
+/// A bottom sheet that displays a list of all chapters for a story.
 class ChapterListBottomSheet extends StatelessWidget {
   final String storyId;
   final String storyTitle;
@@ -30,7 +30,6 @@ class ChapterListBottomSheet extends StatelessWidget {
           color: theme.colorScheme.background.withOpacity(0.7),
           child: Column(
             children: [
-              // Thanh tiêu đề và drag handle
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Center(
@@ -46,13 +45,9 @@ class ChapterListBottomSheet extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Danh sách chương (${allChapters.length})',
-                  style: theme.textTheme.headlineSmall,
-                ),
+                child: Text('Chapters (${allChapters.length})', style: theme.textTheme.headlineSmall),
               ),
               const Divider(height: 1),
-              // Danh sách chương có thể cuộn
               Expanded(
                 child: ListView.builder(
                   itemCount: allChapters.length,
@@ -60,23 +55,21 @@ class ChapterListBottomSheet extends StatelessWidget {
                     final chapter = allChapters[index];
                     final isCurrent = chapter.chapterId == currentChapter.chapterId;
                     return ListTile(
-                      // Đánh dấu chương hiện tại
                       selected: isCurrent,
                       selectedTileColor: theme.colorScheme.primary.withOpacity(0.2),
                       leading: isCurrent ? Icon(Icons.play_arrow_rounded, color: theme.colorScheme.primary) : null,
                       title: Text(
-                        'Chương ${chapter.chapterNumber}: ${chapter.title}',
+                        'Chapter ${chapter.chapterNumber}: ${chapter.title}',
                         style: TextStyle(
                           fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                           color: isCurrent ? theme.colorScheme.primary : theme.colorScheme.onSurface,
                         ),
                       ),
-                      trailing: chapter.isVip ? Icon(Icons.lock_outline_rounded, color: theme.colorScheme.secondary, size: 20) : null,
+                      trailing:
+                          chapter.isVip ? Icon(Icons.lock_outline_rounded, color: theme.colorScheme.secondary, size: 20) : null,
                       onTap: () {
-                        // Nếu không phải chương hiện tại thì mới điều hướng
                         if (!isCurrent) {
-                          // Sử dụng pushReplacement để thay thế màn hình đọc hiện tại
-                          // bằng màn hình đọc của chương mới, tránh việc back lại chương cũ.
+                          // Use pushReplacement to avoid stacking reader screens.
                           context.pushReplacement(
                             '/story/$storyId/chapter/${chapter.chapterId}',
                             extra: {
@@ -86,7 +79,6 @@ class ChapterListBottomSheet extends StatelessWidget {
                             },
                           );
                         } else {
-                          // Nếu là chương hiện tại, chỉ cần đóng bottom sheet
                           context.pop();
                         }
                       },

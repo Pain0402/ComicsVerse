@@ -16,14 +16,14 @@ class ReaderScreen extends ConsumerStatefulWidget {
   final String storyId;
   final String storyTitle;
   final Chapter chapter;
-  final List<Chapter> allChapters; // THÊM MỚI: Nhận danh sách tất cả các chương
+  final List<Chapter> allChapters;
 
   const ReaderScreen({
     super.key,
     required this.storyId,
     required this.storyTitle,
     required this.chapter,
-    required this.allChapters, // Yêu cầu tham số này
+    required this.allChapters,
   });
 
   @override
@@ -34,12 +34,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   bool _showControls = true;
   ReadingMode _readingMode = ReadingMode.vertical;
 
-  // HÀM MỚI: Hàm chung để hiển thị BottomSheet với hiệu ứng Glassmorphism
+  /// Shows a modal bottom sheet with a glassmorphism effect.
   void _showGlassBottomSheet(BuildContext context, {required Widget child}) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent, // Quan trọng để hiệu ứng blur hoạt động
-      isScrollControlled: true, // Cho phép bottom sheet chiếm nhiều không gian hơn
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => child,
     );
   }
@@ -47,7 +47,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final chapterContentAsync = ref.watch(chapterContentProvider(widget.chapter.chapterId));
-    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -56,14 +55,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       appBar: _showControls
           ? ReaderAppBar(
               storyTitle: widget.storyTitle,
-              chapterTitle: 'Chương ${widget.chapter.chapterNumber}: ${widget.chapter.title}',
-              onSettingsTap: () {
-                // CẬP NHẬT: Gọi hàm hiển thị bottom sheet cài đặt
-                _showGlassBottomSheet(
-                  context,
-                  child: const ReaderSettingsBottomSheet(),
-                );
-              },
+              chapterTitle: 'Chapter ${widget.chapter.chapterNumber}: ${widget.chapter.title}',
+              onSettingsTap: () => _showGlassBottomSheet(context, child: const ReaderSettingsBottomSheet()),
             )
           : null,
       body: GestureDetector(
@@ -73,21 +66,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           error: (error, stack) => Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Lỗi: ${error.toString()}',
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
+              child: Text('Error: ${error.toString()}', style: const TextStyle(color: Colors.white), textAlign: TextAlign.center),
             ),
           ),
           data: (imageUrls) {
             if (imageUrls.isEmpty) {
-              return const Center(
-                child: Text(
-                  'Chương này chưa có nội dung.',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
+              return const Center(child: Text('This chapter has no content.', style: TextStyle(color: Colors.white)));
             }
             return _readingMode == ReadingMode.vertical
                 ? _buildVerticalReader(imageUrls)
@@ -99,58 +83,43 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         duration: const Duration(milliseconds: 200),
         child: _showControls
             ? ReaderBottomBar(
-                onChapterListTap: () {
-                  // CẬP NHẬT: Gọi hàm hiển thị bottom sheet danh sách chương
-                  _showGlassBottomSheet(
-                    context,
-                    child: ChapterListBottomSheet(
-                      storyId: widget.storyId,
-                      storyTitle: widget.storyTitle,
-                      allChapters: widget.allChapters,
-                      currentChapter: widget.chapter,
-                    ),
-                  );
-                },
-                onCommentTap: () {
-                  // CẬP NHẬT: Gọi hàm hiển thị bottom sheet bình luận
-                  _showGlassBottomSheet(
-                    context,
-                    child: CommentsBottomSheet(chapterId: widget.chapter.chapterId),
-                  );
-                },
+                onChapterListTap: () => _showGlassBottomSheet(
+                  context,
+                  child: ChapterListBottomSheet(
+                    storyId: widget.storyId,
+                    storyTitle: widget.storyTitle,
+                    allChapters: widget.allChapters,
+                    currentChapter: widget.chapter,
+                  ),
+                ),
+                onCommentTap: () => _showGlassBottomSheet(
+                  context,
+                  child: CommentsBottomSheet(chapterId: widget.chapter.chapterId),
+                ),
                 onReadingModeTap: () {
                   setState(() {
-                    _readingMode = _readingMode == ReadingMode.vertical
-                        ? ReadingMode.horizontal
-                        : ReadingMode.vertical;
+                    _readingMode = _readingMode == ReadingMode.vertical ? ReadingMode.horizontal : ReadingMode.vertical;
                   });
                 },
-                readingModeIcon: _readingMode == ReadingMode.vertical
-                    ? Icons.swap_horiz_rounded
-                    : Icons.swap_vert_rounded,
+                readingModeIcon: _readingMode == ReadingMode.vertical ? Icons.swap_horiz_rounded : Icons.swap_vert_rounded,
               )
             : const SizedBox.shrink(),
       ),
     );
   }
 
-  // ... các hàm build còn lại không đổi ...
   Widget _buildVerticalReader(List<String> imageUrls) {
     return ListView.builder(
       padding: EdgeInsets.zero,
       itemCount: imageUrls.length,
-      itemBuilder: (context, index) {
-        return _buildChapterImage(imageUrls[index]);
-      },
+      itemBuilder: (context, index) => _buildChapterImage(imageUrls[index]),
     );
   }
 
   Widget _buildHorizontalReader(List<String> imageUrls) {
     return PageView.builder(
       itemCount: imageUrls.length,
-      itemBuilder: (context, index) {
-        return _buildChapterImage(imageUrls[index]);
-      },
+      itemBuilder: (context, index) => _buildChapterImage(imageUrls[index]),
     );
   }
 
@@ -175,10 +144,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             children: [
               Icon(Icons.error_outline, color: Colors.red, size: 50),
               SizedBox(height: 8),
-              Text(
-                'Không thể tải ảnh',
-                style: TextStyle(color: Colors.white),
-              ),
+              Text('Could not load image', style: TextStyle(color: Colors.white)),
             ],
           ),
         ),
@@ -193,14 +159,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       child: ListView(
         physics: const NeverScrollableScrollPhysics(),
         children: List.generate(
-            3,
-            (index) => Container(
-                  height: MediaQuery.of(context).size.height,
-                  color: Colors.black,
-                  margin: const EdgeInsets.only(bottom: 8),
-                )),
+          3,
+          (index) => Container(
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black,
+            margin: const EdgeInsets.only(bottom: 8),
+          ),
+        ),
       ),
     );
   }
 }
-

@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// Thanh BottomBar cho màn hình đọc truyện với hiệu ứng Glassmorphism.
+/// A glassmorphism-style bottom navigation bar for the reader screen.
 class ReaderBottomBar extends StatelessWidget {
   final VoidCallback onChapterListTap;
   final VoidCallback onCommentTap;
@@ -31,19 +31,19 @@ class ReaderBottomBar extends StatelessWidget {
               _buildIconButton(
                 context,
                 icon: Icons.list_alt_rounded,
-                label: 'DS Chương',
+                label: 'Chapters',
                 onPressed: onChapterListTap,
               ),
               _buildIconButton(
                 context,
                 icon: readingModeIcon,
-                label: 'Chế độ đọc',
+                label: 'Read Mode',
                 onPressed: onReadingModeTap,
               ),
               _buildIconButton(
                 context,
                 icon: Icons.comment_outlined,
-                label: 'Bình luận',
+                label: 'Comments',
                 onPressed: onCommentTap,
               ),
             ],
@@ -54,9 +54,7 @@ class ReaderBottomBar extends StatelessWidget {
   }
 
   Widget _buildIconButton(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onPressed}) {
+      {required IconData icon, required String label, required VoidCallback onPressed}) {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onPressed,
